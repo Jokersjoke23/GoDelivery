@@ -1,0 +1,94 @@
+delivery-app/
+├── cmd/
+│   └── server/
+│       └── main.go                 # Точка входа, инициализация
+│
+├── internal/
+│   ├── domain/                     # Сущности и бизнес-правила
+│   │   ├── user.go                 # User, Admin
+│   │   ├── restaurant.go           # Restaurant, MenuItem
+│   │   ├── order.go                # Order, OrderItem
+│   │   ├── delivery.go             # Delivery, Courier
+│   │   └── status.go               # Все статусы (enum-like)
+│   │
+│   ├── repository/                 # Работа с БД (интерфейсы + реализация)
+│   │   ├── user_repo.go
+│   │   ├── restaurant_repo.go
+│   │   ├── order_repo.go
+│   │   └── delivery_repo.go
+│   │
+│   ├── service/                    # Бизнес-логика
+│   │   ├── auth_service.go
+│   │   ├── user_service.go
+│   │   ├── restaurant_service.go
+│   │   ├── order_service.go
+│   │   └── delivery_service.go
+│   │
+│   ├── handler/                    # HTTP handlers (controllers)
+│   │   ├── auth_handler.go
+│   │   ├── user_handler.go
+│   │   ├── restaurant_handler.go
+│   │   ├── order_handler.go
+│   │   └── delivery_handler.go
+│   │
+│   └── middleware/
+│       ├── auth.go                 # JWT проверка
+│       └── role.go                 # Проверка ролей (admin, courier...)
+│
+├── pkg/                            # Переиспользуемые пакеты
+│   ├── jwt/
+│   │   └── jwt.go                  # Генерация и парсинг токенов
+│   ├── hasher/
+│   │   └── hasher.go               # Хеширование паролей
+│   └── response/
+│       └── response.go             # Стандартные JSON ответы
+│
+├── config/
+│   └── config.go                   # Конфиг из env переменных
+│
+├── migrations/                     # SQL миграции
+│   ├── 001_create_users.sql
+│   ├── 002_create_restaurants.sql
+│   └── 003_create_orders.sql
+│
+├── .env.example
+├── go.mod
+└── go.sum
+
+handler → service → repository → domain
+
+pending → accepted → preparing → ready → picked_up → on_the_way → delivered
+       ↘ rejected              ↘ cancelled
+
+
+cmd/server/
+Точка входа в приложение.
+Здесь живёт main.go — он запускает сервер, подключает БД, собирает все зависимости вместе. Больше ничего тут не делается.
+
+internal/
+Главная папка с кодом. Слово internal в Go имеет особый смысл — код внутри этой папки нельзя импортировать из других проектов. Это защита твоей бизнес-логики.
+internal/domain/
+Сущности — сердце проекта. Здесь описываешь что такое User, Order, Restaurant, Courier — просто структуры и константы. Никакой логики, никакой БД. Этот слой ни от чего не зависит.
+internal/repository/
+Всё что связано с базой данных. Здесь пишешь запросы — SELECT, INSERT, UPDATE. Только этот слой знает про БД. Остальные слои не знают существует ли PostgreSQL или MongoDB.
+internal/service/
+Бизнес-логика. Здесь принимаются решения — можно ли сделать заказ, назначить курьера, отменить доставку. Service вызывает repository для получения данных, обрабатывает их и возвращает результат.
+internal/handler/
+HTTP обработчики. Принимают запрос от клиента (мобильного приложения), достают данные из JSON, вызывают service и отдают ответ. Этот слой знает только про HTTP.
+internal/middleware/
+Посредники между запросом и handler-ом. Например проверка JWT токена или роли пользователя выполняется здесь — до того как запрос дойдёт до handler-а.
+
+pkg/
+Вспомогательные утилиты которые не содержат бизнес-логики и теоретически можно использовать в любом другом проекте.
+pkg/jwt/
+Генерация и проверка JWT токенов — выдаёшь токен при логине, проверяешь при каждом запросе.
+pkg/hasher/
+Хеширование паролей перед сохранением в БД. Никогда не храним пароли в открытом виде.
+pkg/response/
+Стандартный формат JSON ответов. Чтобы везде возвращать одинаковую структуру — { success, data, error }.
+
+config/
+Конфигурация приложения. Читает переменные окружения из .env файла — порт, строку подключения к БД, секретный ключ JWT и т.д.
+
+migrations/
+SQL файлы для создания таблиц в БД. Каждый файл — одно изменение схемы БД. Например 001_create_users.sql, 002_create_orders.sql. Это история изменений твоей базы данных.
