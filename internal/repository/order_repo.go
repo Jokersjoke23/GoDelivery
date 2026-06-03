@@ -1,0 +1,60 @@
+package repository
+
+import (
+	"delivery-app/internal/domain"
+
+	"gorm.io/gorm"
+)
+
+type OrderRepository interface {
+	Create(order *domain.Order) error
+	GetByID(id string) (*domain.Order, error)
+	GetByUserID(userID string) ([]domain.Order, error)
+	GetByRestaurantID(restaurantID string) ([]domain.Order, error)
+	UpdateStatus(id string, status domain.OrderStatus) error
+	Delete(id string) error
+}
+
+type orderRepository struct {
+	db *gorm.DB
+}
+
+func NewOrderRepository(db *gorm.DB) OrderRepository {
+	return &orderRepository{db: db}
+}
+
+func (r *orderRepository) Create(order *domain.Order) error {
+	return r.db.Create(order).Error
+}
+
+func (r *orderRepository) GetByID(id string) (*domain.Order, error) {
+	var order domain.Order
+	if err := r.db.Preload("Items").Preload("Items.MenuItem").First(&order, "id = ?", id).Error; err != nil {
+		return nil, err
+	}
+	return &order, nil
+}
+
+func (r *orderRepository) GetByUserID(userID string) ([]domain.Order, error) {
+	var orders []domain.Order
+	if err := r.db.Where("user_id = ?", userID).Preload("Items").Find(&orders).Error; err != nil {
+		return nil, err
+	}
+	return orders, nil
+}
+
+func (r *orderRepository) GetByRestaurantID(restaurantID string) ([]domain.Order, error) {
+	var orders []domain.Order
+	if err := r.db.Where("restaurant_id = ?", restaurantID).Preload("Items").Find(&orders).Error; err != nil {
+		return nil, err
+	}
+	return orders, nil
+}
+
+func (r *orderRepository) UpdateStatus(id string, status domain.OrderStatus) error {
+	return r.db.Model(&domain.Order{}).Where("id = ?", id).Update("status", status).Error
+}
+
+func (r *orderRepository) Delete(id string) error {
+	return r.db.Delete(&domain.Order{}, "id = ?", id).Error
+}
