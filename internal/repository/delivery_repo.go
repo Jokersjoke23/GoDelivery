@@ -3,6 +3,8 @@ package repository
 import (
 	"delivery-app/internal/domain"
 
+	"time"
+
 	"gorm.io/gorm"
 )
 
@@ -12,6 +14,8 @@ type DeliveryRepository interface {
 	GetByOrderID(orderID string) (*domain.Delivery, error)
 	GetByCourierID(courierID string) ([]domain.Delivery, error)
 	UpdateStatus(id string, status domain.DeliveryStatus) error
+	UpdatePickedUpAt(id string, t *time.Time) error
+	UpdateDeliveredAt(id string, t *time.Time) error
 }
 
 type deliveryRepository struct {
@@ -52,4 +56,12 @@ func (r *deliveryRepository) GetByCourierID(courierID string) ([]domain.Delivery
 
 func (r *deliveryRepository) UpdateStatus(id string, status domain.DeliveryStatus) error {
 	return r.db.Model(&domain.Delivery{}).Where("id = ?", id).Update("status", status).Error
+}
+
+func (r *deliveryRepository) UpdatePickedUpAt(id string, t *time.Time) error {
+	return r.db.Model(&domain.Delivery{}).Where("id = ?", id).Update("picked_up_at", t).Error
+}
+
+func (r *deliveryRepository) UpdateDeliveredAt(id string, t *time.Time) error {
+	return r.db.Model(&domain.Delivery{}).Where("id = ?", id).Update("delivered_at", t).Error
 }

@@ -12,6 +12,7 @@ type UserRepository interface {
 	GetByEmail(email string) (*domain.User, error)
 	Update(user *domain.User) error
 	Delete(id string) error
+	GetAll() ([]domain.User, error)
 }
 
 type userRepository struct {
@@ -48,4 +49,12 @@ func (r *userRepository) Update(user *domain.User) error {
 
 func (r *userRepository) Delete(id string) error {
 	return r.db.Delete(&domain.User{}, "id = ?", id).Error
+}
+
+func (r *userRepository) GetAll() ([]domain.User, error) {
+	var users []domain.User
+	if err := r.db.Find(&users).Error; err != nil {
+		return nil, err
+	}
+	return users, nil
 }
