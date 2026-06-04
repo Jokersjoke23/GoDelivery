@@ -33,7 +33,8 @@ func NewRestaurantService(restaurantRepo repository.RestaurantRepository, menuIt
 func (s *restaurantService) Create(ownerID string, req domain.CreateRestaurantRequest) (*domain.RestaurantResponse, error) {
 	restaurant := &domain.Restaurant{
 		OwnerID: ownerID,
-		Name:    req.Name,
+		NameRu:  req.NameRu,
+		NameEn:  req.NameEn,
 		Address: req.Address,
 		Phone:   req.Phone,
 		Status:  domain.RestaurantStatusActive,
@@ -86,8 +87,11 @@ func (s *restaurantService) Update(id string, req domain.UpdateRestaurantRequest
 		return nil, errors.New("ресторан не найден")
 	}
 
-	if req.Name != nil {
-		restaurant.Name = *req.Name
+	if req.NameRu != nil {
+		restaurant.NameRu = *req.NameRu
+	}
+	if req.NameEn != nil {
+		restaurant.NameEn = *req.NameEn
 	}
 	if req.Address != nil {
 		restaurant.Address = *req.Address
@@ -122,7 +126,8 @@ func (s *restaurantService) AddMenuItem(restaurantID string, req domain.CreateMe
 
 	item := &domain.MenuItem{
 		RestaurantID: restaurantID,
-		Name:         req.Name,
+		NameRu:       req.NameRu,
+		NameEn:       req.NameEn,
 		Price:        req.Price,
 		IsAvailable:  req.IsAvailable,
 	}
@@ -140,8 +145,11 @@ func (s *restaurantService) UpdateMenuItem(id string, req domain.UpdateMenuItemR
 		return nil, errors.New("блюдо не найдено")
 	}
 
-	if req.Name != nil {
-		item.Name = *req.Name
+	if req.NameRu != nil {
+		item.NameRu = *req.NameRu
+	}
+	if req.NameEn != nil {
+		item.NameEn = *req.NameEn
 	}
 	if req.Price != nil {
 		item.Price = *req.Price
@@ -169,7 +177,8 @@ func toRestaurantResponse(r *domain.Restaurant) *domain.RestaurantResponse {
 	return &domain.RestaurantResponse{
 		ID:      r.ID,
 		OwnerID: r.OwnerID,
-		Name:    r.Name,
+		NameRu:  r.NameRu,
+		NameEn:  r.NameEn,
 		Address: r.Address,
 		Phone:   r.Phone,
 		Status:  r.Status,
@@ -180,7 +189,8 @@ func toMenuItemResponse(m *domain.MenuItem) *domain.MenuItemResponse {
 	return &domain.MenuItemResponse{
 		ID:           m.ID,
 		RestaurantID: m.RestaurantID,
-		Name:         m.Name,
+		NameRu:       m.NameRu,
+		NameEn:       m.NameEn,
 		Price:        m.Price,
 		IsAvailable:  m.IsAvailable,
 	}

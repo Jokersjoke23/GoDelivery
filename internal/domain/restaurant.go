@@ -18,6 +18,8 @@ type Restaurant struct {
 	UpdatedAt time.Time        `gorm:"autoUpdateTime" json:"updated_at"`
 	DeletedAt gorm.DeletedAt   `gorm:"index" json:"-"`
 	MenuItems []MenuItem       `gorm:"foreignKey:RestaurantID" json:"menu_items,omitempty"`
+	NameRu    string           `gorm:"type:varchar(100)" json:"name_ru"`
+	NameEn    string           `gorm:"type:varchar(100)" json:"name_en"`
 }
 
 func (Restaurant) TableName() string {
@@ -33,6 +35,8 @@ type MenuItem struct {
 	CreatedAt    time.Time      `gorm:"autoCreateTime" json:"created_at"`
 	UpdatedAt    time.Time      `gorm:"autoUpdateTime" json:"updated_at"`
 	DeletedAt    gorm.DeletedAt `gorm:"index" json:"-"`
+	NameRu       string         `gorm:"type:varchar(100)" json:"name_ru"`
+	NameEn       string         `gorm:"type:varchar(100)" json:"name_en"`
 }
 
 func (MenuItem) TableName() string {
