@@ -40,7 +40,7 @@ func (s *courierService) Create(userID string) (*domain.CourierResponse, error) 
 	}
 
 	existing, _ := s.courierRepo.GetByUserID(userID)
-	if existing != nil {
+	if existing != nil && !existing.DeletedAt.Valid {
 		return nil, errors.New("профиль курьера уже существует")
 	}
 
@@ -113,16 +113,6 @@ func (s *courierService) Delete(id string) error {
 	return s.courierRepo.Delete(id)
 }
 
-func toCourierResponse(c *domain.Courier) *domain.CourierResponse {
-	return &domain.CourierResponse{
-		ID:          c.ID,
-		UserID:      c.UserID,
-		Status:      c.Status,
-		LocationLat: c.LocationLat,
-		LocationLng: c.LocationLng,
-	}
-}
-
 func (s *courierService) DeleteProfile(userID string) error {
 	courier, err := s.courierRepo.GetByUserID(userID)
 	if err != nil {
@@ -138,4 +128,14 @@ func (s *courierService) DeleteProfile(userID string) error {
 	}
 
 	return nil
+}
+
+func toCourierResponse(c *domain.Courier) *domain.CourierResponse {
+	return &domain.CourierResponse{
+		ID:          c.ID,
+		UserID:      c.UserID,
+		Status:      c.Status,
+		LocationLat: c.LocationLat,
+		LocationLng: c.LocationLng,
+	}
 }

@@ -38,7 +38,7 @@ func (r *courierRepository) GetByID(id string) (*domain.Courier, error) {
 
 func (r *courierRepository) GetByUserID(userID string) (*domain.Courier, error) {
 	var courier domain.Courier
-	if err := r.db.First(&courier, "user_id = ?", userID).Error; err != nil {
+	if err := r.db.Unscoped().First(&courier, "user_id = ?", userID).Error; err != nil {
 		return nil, err
 	}
 	return &courier, nil
