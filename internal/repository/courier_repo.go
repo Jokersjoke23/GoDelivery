@@ -64,5 +64,5 @@ func (r *courierRepository) UpdateLocation(id string, lat float64, lng float64) 
 }
 
 func (r *courierRepository) Delete(id string) error {
-	return r.db.Delete(&domain.Courier{}, "id = ?", id).Error
+	return r.db.Unscoped().Delete(&domain.Courier{}, "id = ?", id).Error
 }

@@ -647,6 +647,23 @@ paths:
       tags:
       - couriers
   /couriers/me:
+    delete:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Удалить профиль курьера
+      tags:
+      - couriers
     get:
       produces:
       - application/json
