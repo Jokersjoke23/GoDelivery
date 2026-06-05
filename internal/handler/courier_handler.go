@@ -17,6 +17,13 @@ func NewCourierHandler(courierService service.CourierService) *CourierHandler {
 	return &CourierHandler{courierService: courierService}
 }
 
+// @Summary     Создать профиль курьера
+// @Tags        couriers
+// @Produce     json
+// @Security    BearerAuth
+// @Success     201 {object} domain.Courier
+// @Failure     400 {object} response.ErrorResponse
+// @Router      /couriers [post]
 func (h *CourierHandler) Create(c *gin.Context) {
 	userID := c.GetString("userID")
 	courier, err := h.courierService.Create(userID)
@@ -27,6 +34,13 @@ func (h *CourierHandler) Create(c *gin.Context) {
 	response.Success(c, http.StatusCreated, courier)
 }
 
+// @Summary     Мой профиль курьера
+// @Tags        couriers
+// @Produce     json
+// @Security    BearerAuth
+// @Success     200 {object} domain.Courier
+// @Failure     404 {object} response.ErrorResponse
+// @Router      /couriers/me [get]
 func (h *CourierHandler) GetMe(c *gin.Context) {
 	userID := c.GetString("userID")
 	courier, err := h.courierService.GetByUserID(userID)
@@ -37,6 +51,13 @@ func (h *CourierHandler) GetMe(c *gin.Context) {
 	response.Success(c, http.StatusOK, courier)
 }
 
+// @Summary     Онлайн курьеры (admin)
+// @Tags        couriers
+// @Produce     json
+// @Security    BearerAuth
+// @Success     200 {object} []domain.Courier
+// @Failure     500 {object} response.ErrorResponse
+// @Router      /admin/couriers/online [get]
 func (h *CourierHandler) GetAllOnline(c *gin.Context) {
 	couriers, err := h.courierService.GetAllOnline()
 	if err != nil {
@@ -46,6 +67,15 @@ func (h *CourierHandler) GetAllOnline(c *gin.Context) {
 	response.Success(c, http.StatusOK, couriers)
 }
 
+// @Summary     Обновить статус курьера
+// @Tags        couriers
+// @Accept      json
+// @Produce     json
+// @Security    BearerAuth
+// @Param       input body domain.CourierStatus true "Новый статус"
+// @Success     200 {object} map[string]string
+// @Failure     400 {object} response.ErrorResponse
+// @Router      /couriers/me/status [put]
 func (h *CourierHandler) UpdateStatus(c *gin.Context) {
 	userID := c.GetString("userID")
 	courier, err := h.courierService.GetByUserID(userID)
@@ -67,6 +97,15 @@ func (h *CourierHandler) UpdateStatus(c *gin.Context) {
 	response.Success(c, http.StatusOK, gin.H{"message": "статус обновлён"})
 }
 
+// @Summary     Обновить геолокацию курьера
+// @Tags        couriers
+// @Accept      json
+// @Produce     json
+// @Security    BearerAuth
+// @Param       input body domain.CourierLocationRequest true "Координаты"
+// @Success     200 {object} map[string]string
+// @Failure     400 {object} response.ErrorResponse
+// @Router      /couriers/me/location [put]
 func (h *CourierHandler) UpdateLocation(c *gin.Context) {
 	userID := c.GetString("userID")
 	courier, err := h.courierService.GetByUserID(userID)

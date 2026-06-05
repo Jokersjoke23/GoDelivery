@@ -21,6 +21,14 @@ func NewDeliveryHandler(deliveryService service.DeliveryService, courierService 
 	}
 }
 
+// @Summary     Доставка по ID
+// @Tags        deliveries
+// @Produce     json
+// @Security    BearerAuth
+// @Param       id path string true "ID доставки"
+// @Success     200 {object} domain.Delivery
+// @Failure     404 {object} response.ErrorResponse
+// @Router      /deliveries/{id} [get]
 func (h *DeliveryHandler) GetByID(c *gin.Context) {
 	id := c.Param("id")
 	delivery, err := h.deliveryService.GetByID(id)
@@ -31,6 +39,14 @@ func (h *DeliveryHandler) GetByID(c *gin.Context) {
 	response.Success(c, http.StatusOK, delivery)
 }
 
+// @Summary     Доставка по заказу
+// @Tags        deliveries
+// @Produce     json
+// @Security    BearerAuth
+// @Param       id path string true "ID заказа"
+// @Success     200 {object} domain.Delivery
+// @Failure     404 {object} response.ErrorResponse
+// @Router      /orders/{id}/delivery [get]
 func (h *DeliveryHandler) GetByOrderID(c *gin.Context) {
 	orderID := c.Param("id")
 	delivery, err := h.deliveryService.GetByOrderID(orderID)
@@ -41,6 +57,13 @@ func (h *DeliveryHandler) GetByOrderID(c *gin.Context) {
 	response.Success(c, http.StatusOK, delivery)
 }
 
+// @Summary     Мои доставки (курьер)
+// @Tags        deliveries
+// @Produce     json
+// @Security    BearerAuth
+// @Success     200 {object} []domain.Delivery
+// @Failure     500 {object} response.ErrorResponse
+// @Router      /couriers/me/deliveries [get]
 func (h *DeliveryHandler) GetMyCourierDeliveries(c *gin.Context) {
 	userID := c.GetString("userID")
 	courier, err := h.courierService.GetByUserID(userID)
@@ -56,6 +79,16 @@ func (h *DeliveryHandler) GetMyCourierDeliveries(c *gin.Context) {
 	response.Success(c, http.StatusOK, deliveries)
 }
 
+// @Summary     Обновить статус доставки
+// @Tags        deliveries
+// @Accept      json
+// @Produce     json
+// @Security    BearerAuth
+// @Param       id path string true "ID доставки"
+// @Param       input body domain.DeliveryStatus true "Новый статус"
+// @Success     200 {object} map[string]string
+// @Failure     400 {object} response.ErrorResponse
+// @Router      /deliveries/{id}/status [put]
 func (h *DeliveryHandler) UpdateStatus(c *gin.Context) {
 	id := c.Param("id")
 	var req struct {

@@ -1,10 +1,13 @@
 package handler
 
 import (
+	"delivery-app/docs"
 	"delivery-app/internal/middleware"
 	"delivery-app/pkg/jwt"
 
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 type Router struct {
@@ -34,6 +37,10 @@ func NewRouter(
 }
 
 func (r *Router) Setup(engine *gin.Engine) {
+	docs.SwaggerInfo.BasePath = "/api"
+
+	engine.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
 	api := engine.Group("/api")
 
 	authGroup := api.Group("/auth")

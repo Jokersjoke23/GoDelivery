@@ -17,3 +17,8 @@ type CourierResponse struct {
 	LocationLat float64       `json:"location_lat"`
 	LocationLng float64       `json:"location_lng"`
 }
+
+type CourierLocationRequest struct {
+	Lat float64 `json:"lat" binding:"required"`
+	Lng float64 `json:"lng" binding:"required"`
+}

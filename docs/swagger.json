@@ -1,0 +1,1805 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "REST API для сервиса доставки еды",
+        "title": "GoDelivery API",
+        "contact": {},
+        "version": "1.0"
+    },
+    "host": "localhost:8080",
+    "basePath": "/api",
+    "paths": {
+        "/admin/couriers/online": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "couriers"
+                ],
+                "summary": "Онлайн курьеры (admin)",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/domain.Courier"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/orders/{id}/status": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "orders"
+                ],
+                "summary": "Обновить статус заказа (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID заказа",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Новый статус",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/domain.UpdateOrderStatusRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/users": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Все пользователи (admin)",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/domain.UserResponse"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/users/{id}": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Удалить пользователя (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID пользователя",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/login": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Вход в систему",
+                "parameters": [
+                    {
+                        "description": "Email и пароль",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/domain.LoginRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/domain.AuthResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/register": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Регистрация",
+                "parameters": [
+                    {
+                        "description": "Данные пользователя",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/domain.CreateUserRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/domain.AuthResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/couriers": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "couriers"
+                ],
+                "summary": "Создать профиль курьера",
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/domain.Courier"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/couriers/me": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "couriers"
+                ],
+                "summary": "Мой профиль курьера",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/domain.Courier"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/couriers/me/deliveries": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "deliveries"
+                ],
+                "summary": "Мои доставки (курьер)",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/domain.Delivery"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/couriers/me/location": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "couriers"
+                ],
+                "summary": "Обновить геолокацию курьера",
+                "parameters": [
+                    {
+                        "description": "Координаты",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/domain.CourierLocationRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/couriers/me/status": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "couriers"
+                ],
+                "summary": "Обновить статус курьера",
+                "parameters": [
+                    {
+                        "description": "Новый статус",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/deliveries/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "deliveries"
+                ],
+                "summary": "Доставка по ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID доставки",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/domain.Delivery"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/deliveries/{id}/status": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "deliveries"
+                ],
+                "summary": "Обновить статус доставки",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID доставки",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Новый статус",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/orders": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "orders"
+                ],
+                "summary": "Создать заказ",
+                "parameters": [
+                    {
+                        "description": "Данные заказа",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/domain.CreateOrderRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/domain.Order"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/orders/my": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "orders"
+                ],
+                "summary": "Мои заказы",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/domain.Order"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/orders/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "orders"
+                ],
+                "summary": "Заказ по ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID заказа",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/domain.Order"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/orders/{id}/cancel": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "orders"
+                ],
+                "summary": "Отменить заказ",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID заказа",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/orders/{id}/delivery": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "deliveries"
+                ],
+                "summary": "Доставка по заказу",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID заказа",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/domain.Delivery"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/restaurants": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "restaurants"
+                ],
+                "summary": "Все рестораны",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/domain.Restaurant"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "restaurants"
+                ],
+                "summary": "Создать ресторан",
+                "parameters": [
+                    {
+                        "description": "Данные ресторана",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/domain.CreateRestaurantRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/domain.Restaurant"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/restaurants/menu/{itemID}": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "restaurants"
+                ],
+                "summary": "Обновить блюдо",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID блюда",
+                        "name": "itemID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Данные для обновления",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/domain.UpdateMenuItemRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/domain.MenuItem"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "restaurants"
+                ],
+                "summary": "Удалить блюдо",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID блюда",
+                        "name": "itemID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/restaurants/{id}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "restaurants"
+                ],
+                "summary": "Ресторан по ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID ресторана",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/domain.Restaurant"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "restaurants"
+                ],
+                "summary": "Обновить ресторан",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID ресторана",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Данные для обновления",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/domain.UpdateRestaurantRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/domain.Restaurant"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "restaurants"
+                ],
+                "summary": "Удалить ресторан",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID ресторана",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/restaurants/{id}/menu": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "restaurants"
+                ],
+                "summary": "Добавить блюдо в меню",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID ресторана",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Данные блюда",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/domain.CreateMenuItemRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/domain.MenuItem"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/restaurants/{id}/orders": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "orders"
+                ],
+                "summary": "Заказы ресторана",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID ресторана",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/domain.Order"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/me": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Мой профиль",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/domain.UserResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Обновить профиль",
+                "parameters": [
+                    {
+                        "description": "Данные для обновления",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/domain.UpdateUserRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/domain.UserResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "domain.AuthResponse": {
+            "type": "object",
+            "properties": {
+                "token": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/domain.UserResponse"
+                }
+            }
+        },
+        "domain.Courier": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "location_lat": {
+                    "type": "number"
+                },
+                "location_lng": {
+                    "type": "number"
+                },
+                "status": {
+                    "$ref": "#/definitions/domain.CourierStatus"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/domain.User"
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.CourierLocationRequest": {
+            "type": "object",
+            "required": [
+                "lat",
+                "lng"
+            ],
+            "properties": {
+                "lat": {
+                    "type": "number"
+                },
+                "lng": {
+                    "type": "number"
+                }
+            }
+        },
+        "domain.CourierStatus": {
+            "type": "string",
+            "enum": [
+                "online",
+                "offline",
+                "busy"
+            ],
+            "x-enum-varnames": [
+                "CourierStatusOnline",
+                "CourierStatusOffline",
+                "CourierStatusBusy"
+            ]
+        },
+        "domain.CreateMenuItemRequest": {
+            "type": "object",
+            "required": [
+                "name_en",
+                "name_ru",
+                "price"
+            ],
+            "properties": {
+                "is_available": {
+                    "type": "boolean"
+                },
+                "name_en": {
+                    "type": "string",
+                    "minLength": 2
+                },
+                "name_ru": {
+                    "type": "string",
+                    "minLength": 2
+                },
+                "price": {
+                    "type": "number",
+                    "minimum": 0
+                }
+            }
+        },
+        "domain.CreateOrderItemRequest": {
+            "type": "object",
+            "required": [
+                "menu_item_id",
+                "quantity"
+            ],
+            "properties": {
+                "menu_item_id": {
+                    "type": "string"
+                },
+                "quantity": {
+                    "type": "integer",
+                    "minimum": 1
+                }
+            }
+        },
+        "domain.CreateOrderRequest": {
+            "type": "object",
+            "required": [
+                "address",
+                "items",
+                "payment_method",
+                "restaurant_id"
+            ],
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "items": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "$ref": "#/definitions/domain.CreateOrderItemRequest"
+                    }
+                },
+                "payment_method": {
+                    "$ref": "#/definitions/domain.PaymentMethod"
+                },
+                "restaurant_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.CreateRestaurantRequest": {
+            "type": "object",
+            "required": [
+                "address",
+                "name_en",
+                "name_ru",
+                "phone"
+            ],
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "name_en": {
+                    "type": "string",
+                    "minLength": 2
+                },
+                "name_ru": {
+                    "type": "string",
+                    "minLength": 2
+                },
+                "phone": {
+                    "type": "string",
+                    "minLength": 10
+                }
+            }
+        },
+        "domain.CreateUserRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "name",
+                "password",
+                "phone",
+                "role"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string",
+                    "minLength": 2
+                },
+                "password": {
+                    "type": "string",
+                    "minLength": 6
+                },
+                "phone": {
+                    "type": "string",
+                    "minLength": 10
+                },
+                "role": {
+                    "$ref": "#/definitions/domain.UserRole"
+                }
+            }
+        },
+        "domain.Delivery": {
+            "type": "object",
+            "properties": {
+                "courier": {
+                    "$ref": "#/definitions/domain.Courier"
+                },
+                "courier_id": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "delivered_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "order": {
+                    "$ref": "#/definitions/domain.Order"
+                },
+                "order_id": {
+                    "type": "string"
+                },
+                "picked_up_at": {
+                    "type": "string"
+                },
+                "status": {
+                    "$ref": "#/definitions/domain.DeliveryStatus"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.DeliveryStatus": {
+            "type": "string",
+            "enum": [
+                "waiting",
+                "assigned",
+                "picked_up",
+                "on_the_way",
+                "delivered",
+                "failed"
+            ],
+            "x-enum-varnames": [
+                "DeliveryStatusWaiting",
+                "DeliveryStatusAssigned",
+                "DeliveryStatusPickedUp",
+                "DeliveryStatusOnTheWay",
+                "DeliveryStatusDelivered",
+                "DeliveryStatusFailed"
+            ]
+        },
+        "domain.LoginRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.MenuItem": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_available": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "name_en": {
+                    "type": "string"
+                },
+                "name_ru": {
+                    "type": "string"
+                },
+                "price": {
+                    "type": "number"
+                },
+                "restaurant_id": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.Order": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/domain.OrderItem"
+                    }
+                },
+                "payment_method": {
+                    "$ref": "#/definitions/domain.PaymentMethod"
+                },
+                "payment_status": {
+                    "$ref": "#/definitions/domain.PaymentStatus"
+                },
+                "restaurant": {
+                    "$ref": "#/definitions/domain.Restaurant"
+                },
+                "restaurant_id": {
+                    "type": "string"
+                },
+                "status": {
+                    "$ref": "#/definitions/domain.OrderStatus"
+                },
+                "total_price": {
+                    "type": "number"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/domain.User"
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.OrderItem": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "menu_item": {
+                    "$ref": "#/definitions/domain.MenuItem"
+                },
+                "menu_item_id": {
+                    "type": "string"
+                },
+                "order_id": {
+                    "type": "string"
+                },
+                "price": {
+                    "type": "number"
+                },
+                "quantity": {
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.OrderStatus": {
+            "type": "string",
+            "enum": [
+                "pending",
+                "accepted",
+                "preparing",
+                "ready",
+                "picked_up",
+                "on_the_way",
+                "delivered",
+                "cancelled",
+                "rejected"
+            ],
+            "x-enum-varnames": [
+                "OrderStatusPending",
+                "OrderStatusAccepted",
+                "OrderStatusPreparing",
+                "OrderStatusReady",
+                "OrderStatusPickedUp",
+                "OrderStatusOnTheWay",
+                "OrderStatusDelivered",
+                "OrderStatusCancelled",
+                "OrderStatusRejected"
+            ]
+        },
+        "domain.PaymentMethod": {
+            "type": "string",
+            "enum": [
+                "cash",
+                "card",
+                "online"
+            ],
+            "x-enum-varnames": [
+                "PaymentMethodCash",
+                "PaymentMethodCard",
+                "PaymentMethodOnline"
+            ]
+        },
+        "domain.PaymentStatus": {
+            "type": "string",
+            "enum": [
+                "pending",
+                "paid",
+                "failed",
+                "refunded"
+            ],
+            "x-enum-varnames": [
+                "PaymentStatusPending",
+                "PaymentStatusPaid",
+                "PaymentStatusFailed",
+                "PaymentStatusRefunded"
+            ]
+        },
+        "domain.Restaurant": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "menu_items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/domain.MenuItem"
+                    }
+                },
+                "name": {
+                    "type": "string"
+                },
+                "name_en": {
+                    "type": "string"
+                },
+                "name_ru": {
+                    "type": "string"
+                },
+                "owner": {
+                    "$ref": "#/definitions/domain.User"
+                },
+                "owner_id": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "status": {
+                    "$ref": "#/definitions/domain.RestaurantStatus"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.RestaurantStatus": {
+            "type": "string",
+            "enum": [
+                "active",
+                "inactive",
+                "closed"
+            ],
+            "x-enum-varnames": [
+                "RestaurantStatusActive",
+                "RestaurantStatusInactive",
+                "RestaurantStatusClosed"
+            ]
+        },
+        "domain.UpdateMenuItemRequest": {
+            "type": "object",
+            "properties": {
+                "is_available": {
+                    "type": "boolean"
+                },
+                "name_en": {
+                    "type": "string"
+                },
+                "name_ru": {
+                    "type": "string"
+                },
+                "price": {
+                    "type": "number"
+                }
+            }
+        },
+        "domain.UpdateOrderStatusRequest": {
+            "type": "object",
+            "required": [
+                "status"
+            ],
+            "properties": {
+                "status": {
+                    "$ref": "#/definitions/domain.OrderStatus"
+                }
+            }
+        },
+        "domain.UpdateRestaurantRequest": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "name_en": {
+                    "type": "string"
+                },
+                "name_ru": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "status": {
+                    "$ref": "#/definitions/domain.RestaurantStatus"
+                }
+            }
+        },
+        "domain.UpdateUserRequest": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.User": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_active": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "role": {
+                    "$ref": "#/definitions/domain.UserRole"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.UserResponse": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_active": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "role": {
+                    "$ref": "#/definitions/domain.UserRole"
+                }
+            }
+        },
+        "domain.UserRole": {
+            "type": "string",
+            "enum": [
+                "admin",
+                "customer",
+                "courier"
+            ],
+            "x-enum-varnames": [
+                "UserRoleAdmin",
+                "UserRoleCustomer",
+                "UserRoleCourier"
+            ]
+        },
+        "response.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        }
+    },
+    "securityDefinitions": {
+        "BearerAuth": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        }
+    }
+}

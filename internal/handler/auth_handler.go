@@ -17,6 +17,14 @@ func NewAuthHandler(authService service.AuthService) *AuthHandler {
 	return &AuthHandler{authService: authService}
 }
 
+// @Summary     Регистрация
+// @Tags        auth
+// @Accept      json
+// @Produce     json
+// @Param       input body domain.CreateUserRequest true "Данные пользователя"
+// @Success     201 {object} domain.AuthResponse
+// @Failure     400 {object} response.ErrorResponse
+// @Router      /auth/register [post]
 func (h *AuthHandler) Register(c *gin.Context) {
 	var req domain.CreateUserRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -33,6 +41,14 @@ func (h *AuthHandler) Register(c *gin.Context) {
 	response.Success(c, http.StatusCreated, result)
 }
 
+// @Summary     Вход в систему
+// @Tags        auth
+// @Accept      json
+// @Produce     json
+// @Param       input body domain.LoginRequest true "Email и пароль"
+// @Success     200 {object} domain.AuthResponse
+// @Failure     401 {object} response.ErrorResponse
+// @Router      /auth/login [post]
 func (h *AuthHandler) Login(c *gin.Context) {
 	var req domain.LoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {

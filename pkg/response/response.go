@@ -8,6 +8,16 @@ type Response struct {
 	Error   string      `json:"error,omitempty"`
 }
 
+type ErrorResponse struct {
+	Success bool   `json:"success"`
+	Error   string `json:"error"`
+}
+
+type SuccessResponse struct {
+	Success bool        `json:"success"`
+	Data    interface{} `json:"data"`
+}
+
 func Success(c *gin.Context, statusCode int, data interface{}) {
 	c.JSON(statusCode, Response{
 		Success: true,
