@@ -77,6 +77,7 @@ func (r *Router) Setup(engine *gin.Engine) {
 		protected.PUT("couriers/me/status", r.courier.UpdateStatus)
 		protected.PUT("couriers/me/location", r.courier.UpdateLocation)
 		protected.GET("couriers/me/deliveries", r.delivery.GetMyCourierDeliveries)
+		protected.DELETE("couriers/me", r.courier.DeleteProfile)
 
 		protected.GET("deliveries/:id", r.delivery.GetByID)
 		protected.PUT("deliveries/:id/status", r.delivery.UpdateStatus)

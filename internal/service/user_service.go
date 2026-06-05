@@ -97,9 +97,14 @@ func (s *userService) GetAll() ([]domain.UserResponse, error) {
 }
 
 func (s *userService) AssignRole(id string, role domain.UserRole) error {
-	_, err := s.userRepo.GetByID(id)
+	user, err := s.userRepo.GetByID(id)
 	if err != nil {
 		return errors.New("пользователь не найден")
 	}
+
+	if user.Role == domain.UserRoleAdmin {
+		return errors.New("нельзя изменить роль администратора")
+	}
+
 	return s.userRepo.UpdateRole(id, role)
 }

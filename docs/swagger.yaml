@@ -1,5 +1,12 @@
 basePath: /api
 definitions:
+  domain.AssignRoleRequest:
+    properties:
+      role:
+        $ref: '#/definitions/domain.UserRole'
+    required:
+    - role
+    type: object
   domain.AuthResponse:
     properties:
       token:
@@ -126,14 +133,11 @@ definitions:
       phone:
         minLength: 10
         type: string
-      role:
-        $ref: '#/definitions/domain.UserRole'
     required:
     - email
     - name
     - password
     - phone
-    - role
     type: object
   domain.Delivery:
     properties:
@@ -429,6 +433,12 @@ definitions:
       success:
         type: boolean
     type: object
+  response.SuccessResponse:
+    properties:
+      data: {}
+      success:
+        type: boolean
+    type: object
 host: localhost:8080
 info:
   contact: {}
@@ -534,6 +544,38 @@ paths:
       security:
       - BearerAuth: []
       summary: Удалить пользователя (admin)
+      tags:
+      - users
+  /admin/users/{id}/role:
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID пользователя
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Роль
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/domain.AssignRoleRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Назначить роль пользователю (admin)
       tags:
       - users
   /auth/login:

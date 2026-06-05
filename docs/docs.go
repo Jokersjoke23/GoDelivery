@@ -177,6 +177,57 @@ const docTemplate = `{
                 }
             }
         },
+        "/admin/users/{id}/role": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Назначить роль пользователю (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID пользователя",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Роль",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/domain.AssignRoleRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.SuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/auth/login": {
             "post": {
                 "consumes": [
@@ -1183,6 +1234,17 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "domain.AssignRoleRequest": {
+            "type": "object",
+            "required": [
+                "role"
+            ],
+            "properties": {
+                "role": {
+                    "$ref": "#/definitions/domain.UserRole"
+                }
+            }
+        },
         "domain.AuthResponse": {
             "type": "object",
             "properties": {
@@ -1351,8 +1413,7 @@ const docTemplate = `{
                 "email",
                 "name",
                 "password",
-                "phone",
-                "role"
+                "phone"
             ],
             "properties": {
                 "email": {
@@ -1369,9 +1430,6 @@ const docTemplate = `{
                 "phone": {
                     "type": "string",
                     "minLength": 10
-                },
-                "role": {
-                    "$ref": "#/definitions/domain.UserRole"
                 }
             }
         },
@@ -1795,6 +1853,15 @@ const docTemplate = `{
                 "error": {
                     "type": "string"
                 },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "response.SuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {},
                 "success": {
                     "type": "boolean"
                 }

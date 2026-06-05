@@ -14,6 +14,7 @@ type CourierService interface {
 	UpdateStatus(id string, status domain.CourierStatus) error
 	UpdateLocation(id string, lat float64, lng float64) error
 	Delete(id string) error
+	DeleteProfile(userID string) error
 }
 
 type courierService struct {
@@ -120,4 +121,21 @@ func toCourierResponse(c *domain.Courier) *domain.CourierResponse {
 		LocationLat: c.LocationLat,
 		LocationLng: c.LocationLng,
 	}
+}
+
+func (s *courierService) DeleteProfile(userID string) error {
+	courier, err := s.courierRepo.GetByUserID(userID)
+	if err != nil {
+		return errors.New("профиль курьера не найден")
+	}
+
+	if err := s.courierRepo.Delete(courier.ID); err != nil {
+		return errors.New("ошибка удаления профиля курьера")
+	}
+
+	if err := s.userRepo.UpdateRole(userID, domain.UserRoleCustomer); err != nil {
+		return errors.New("ошибка обновления роли")
+	}
+
+	return nil
 }

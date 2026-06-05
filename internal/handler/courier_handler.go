@@ -127,3 +127,21 @@ func (h *CourierHandler) UpdateLocation(c *gin.Context) {
 	}
 	response.Success(c, http.StatusOK, gin.H{"message": "геолокация обновлена"})
 }
+
+// @Summary     Удалить профиль курьера
+// @Tags        couriers
+// @Produce     json
+// @Security    BearerAuth
+// @Success     200 {object} response.SuccessResponse
+// @Failure     400 {object} response.ErrorResponse
+// @Router      /couriers/me [delete]
+func (h *CourierHandler) DeleteProfile(c *gin.Context) {
+	userID := c.GetString("userID")
+
+	if err := h.courierService.DeleteProfile(userID); err != nil {
+		response.Error(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	response.Success(c, http.StatusOK, gin.H{"message": "профиль курьера удалён, роль изменена на customer"})
+}
