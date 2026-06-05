@@ -34,13 +34,17 @@ func (s *courierService) Create(userID string) (*domain.CourierResponse, error) 
 		return nil, errors.New("пользователь не найден")
 	}
 
-	if user.Role != domain.UserRoleCourier {
-		return nil, errors.New("пользователь не является курьером")
+	if user.Role == domain.UserRoleAdmin {
+		return nil, errors.New("администратор не может быть курьером")
 	}
 
 	existing, _ := s.courierRepo.GetByUserID(userID)
 	if existing != nil {
 		return nil, errors.New("профиль курьера уже существует")
+	}
+
+	if err := s.userRepo.UpdateRole(userID, domain.UserRoleCourier); err != nil {
+		return nil, errors.New("ошибка обновления роли")
 	}
 
 	courier := &domain.Courier{

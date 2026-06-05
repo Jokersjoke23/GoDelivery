@@ -11,6 +11,7 @@ type UserService interface {
 	Update(id string, req domain.UpdateUserRequest) (*domain.UserResponse, error)
 	Delete(id string) error
 	GetAll() ([]domain.UserResponse, error)
+	AssignRole(id string, role domain.UserRole) error
 }
 
 type userService struct {
@@ -93,4 +94,12 @@ func (s *userService) GetAll() ([]domain.UserResponse, error) {
 		})
 	}
 	return response, nil
+}
+
+func (s *userService) AssignRole(id string, role domain.UserRole) error {
+	_, err := s.userRepo.GetByID(id)
+	if err != nil {
+		return errors.New("пользователь не найден")
+	}
+	return s.userRepo.UpdateRole(id, role)
 }

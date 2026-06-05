@@ -1,11 +1,14 @@
 package domain
 
 type CreateUserRequest struct {
-	Name     string   `json:"name" binding:"required,min=2"`
-	Email    string   `json:"email" binding:"required,email"`
-	Phone    string   `json:"phone" binding:"required,min=10"`
-	Password string   `json:"password" binding:"required,min=6"`
-	Role     UserRole `json:"role" binding:"required"`
+	Name     string `json:"name" binding:"required,min=2"`
+	Email    string `json:"email" binding:"required,email"`
+	Phone    string `json:"phone" binding:"required,min=10"`
+	Password string `json:"password" binding:"required,min=6"`
+}
+
+type AssignRoleRequest struct {
+	Role UserRole `json:"role" binding:"required"`
 }
 
 type UpdateUserRequest struct {

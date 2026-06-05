@@ -43,7 +43,7 @@ func (s *authService) Register(req domain.CreateUserRequest) (*domain.AuthRespon
 		Email:    req.Email,
 		Phone:    req.Phone,
 		Password: hashedPassword,
-		Role:     req.Role,
+		Role:     domain.UserRoleCustomer,
 	}
 
 	if err := s.userRepo.Create(user); err != nil {

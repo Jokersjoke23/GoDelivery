@@ -98,3 +98,30 @@ func (h *UserHandler) Delete(c *gin.Context) {
 
 	response.Success(c, http.StatusOK, gin.H{"message": "пользователь удалён"})
 }
+
+// @Summary     Назначить роль пользователю (admin)
+// @Tags        users
+// @Accept      json
+// @Produce     json
+// @Security    BearerAuth
+// @Param       id path string true "ID пользователя"
+// @Param       input body domain.AssignRoleRequest true "Роль"
+// @Success     200 {object} response.SuccessResponse
+// @Failure     400 {object} response.ErrorResponse
+// @Router      /admin/users/{id}/role [put]
+func (h *UserHandler) AssignRole(c *gin.Context) {
+	id := c.Param("id")
+
+	var req domain.AssignRoleRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.Error(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	if err := h.userService.AssignRole(id, req.Role); err != nil {
+		response.Error(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	response.Success(c, http.StatusOK, gin.H{"message": "роль назначена"})
+}

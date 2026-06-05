@@ -88,6 +88,7 @@ func (r *Router) Setup(engine *gin.Engine) {
 			admin.DELETE("users/:id", r.user.Delete)
 			admin.PUT("orders/:id/status", r.order.UpdateStatus)
 			admin.GET("couriers/online", r.courier.GetAllOnline)
+			admin.PUT("users/:id/role", r.user.AssignRole)
 		}
 	}
 }

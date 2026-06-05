@@ -13,6 +13,7 @@ type UserRepository interface {
 	Update(user *domain.User) error
 	Delete(id string) error
 	GetAll() ([]domain.User, error)
+	UpdateRole(id string, role domain.UserRole) error
 }
 
 type userRepository struct {
@@ -57,4 +58,8 @@ func (r *userRepository) GetAll() ([]domain.User, error) {
 		return nil, err
 	}
 	return users, nil
+}
+
+func (r *userRepository) UpdateRole(id string, role domain.UserRole) error {
+	return r.db.Model(&domain.User{}).Where("id = ?", id).Update("role", role).Error
 }
