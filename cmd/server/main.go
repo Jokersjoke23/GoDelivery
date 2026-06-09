@@ -55,7 +55,7 @@ func main() {
 	userHandler := handler.NewUserHandler(userSvc)
 	restaurantHandler := handler.NewRestaurantHandler(restaurantSvc)
 	orderHandler := handler.NewOrderHandler(orderSvc)
-	courierHandler := handler.NewCourierHandler(courierSvc)
+	courierHandler := handler.NewCourierHandler(courierSvc, orderSvc, deliverySvc)
 	deliveryHandler := handler.NewDeliveryHandler(deliverySvc, courierSvc)
 
 	router := handler.NewRouter(

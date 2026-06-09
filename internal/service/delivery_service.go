@@ -12,6 +12,7 @@ type DeliveryService interface {
 	GetByOrderID(orderID string) (*domain.DeliveryResponse, error)
 	GetByCourierID(courierID string) ([]domain.DeliveryResponse, error)
 	UpdateStatus(id string, status domain.DeliveryStatus) error
+	TakeOrder(courierID string, orderID string) (*domain.DeliveryResponse, error)
 }
 
 type deliveryService struct {
@@ -96,4 +97,35 @@ func toDeliveryResponse(d *domain.Delivery) *domain.DeliveryResponse {
 		PickedUpAt:  d.PickedUpAt,
 		DeliveredAt: d.DeliveredAt,
 	}
+}
+
+func (s *deliveryService) TakeOrder(courierID string, orderID string) (*domain.DeliveryResponse, error) {
+	order, err := s.orderRepo.GetByID(orderID)
+	if err != nil {
+		return nil, errors.New("заказ не найден")
+	}
+
+	if order.Status != domain.OrderStatusReady {
+		return nil, errors.New("заказ недоступен для взятия")
+	}
+
+	existing, _ := s.deliveryRepo.GetByOrderID(orderID)
+	if existing != nil {
+		return nil, errors.New("заказ уже взят другим курьером")
+	}
+
+	delivery := &domain.Delivery{
+		OrderID:   orderID,
+		CourierID: courierID,
+		Status:    domain.DeliveryStatusAssigned,
+	}
+
+	if err := s.deliveryRepo.Create(delivery); err != nil {
+		return nil, errors.New("ошибка создания доставки")
+	}
+
+	s.orderRepo.UpdateStatus(orderID, domain.OrderStatusAccepted)
+	s.courierRepo.UpdateStatus(courierID, domain.CourierStatusBusy)
+
+	return toDeliveryResponse(delivery), nil
 }

@@ -10,11 +10,17 @@ import (
 )
 
 type CourierHandler struct {
-	courierService service.CourierService
+	courierService  service.CourierService
+	orderService    service.OrderService
+	deliveryService service.DeliveryService
 }
 
-func NewCourierHandler(courierService service.CourierService) *CourierHandler {
-	return &CourierHandler{courierService: courierService}
+func NewCourierHandler(courierService service.CourierService, orderService service.OrderService, deliveryService service.DeliveryService) *CourierHandler {
+	return &CourierHandler{
+		courierService:  courierService,
+		orderService:    orderService,
+		deliveryService: deliveryService,
+	}
 }
 
 // @Summary     Создать профиль курьера
@@ -144,4 +150,70 @@ func (h *CourierHandler) DeleteProfile(c *gin.Context) {
 	}
 
 	response.Success(c, http.StatusOK, gin.H{"message": "профиль курьера удалён, роль изменена на customer"})
+}
+
+// @Summary     Локация курьера
+// @Tags        couriers
+// @Produce     json
+// @Security    BearerAuth
+// @Success     200 {object} domain.CourierLocationResponse
+// @Failure     404 {object} response.ErrorResponse
+// @Router      /couriers/me/location [get]
+func (h *CourierHandler) GetMyLocation(c *gin.Context) {
+	userID := c.GetString("userID")
+
+	courier, err := h.courierService.GetByUserID(userID)
+	if err != nil {
+		response.Error(c, http.StatusNotFound, err.Error())
+		return
+	}
+
+	response.Success(c, http.StatusOK, domain.CourierLocationResponse{
+		ID:          courier.ID,
+		LocationLat: courier.LocationLat,
+		LocationLng: courier.LocationLng,
+	})
+}
+
+// @Summary     Доступные заказы для курьера
+// @Tags        couriers
+// @Produce     json
+// @Security    BearerAuth
+// @Success     200 {object} []domain.OrderResponse
+// @Failure     500 {object} response.ErrorResponse
+// @Router      /couriers/orders/available [get]
+func (h *CourierHandler) GetAvailableOrders(c *gin.Context) {
+	orders, err := h.orderService.GetAvailable()
+	if err != nil {
+		response.Error(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+	response.Success(c, http.StatusOK, orders)
+}
+
+// @Summary     Взять заказ
+// @Tags        couriers
+// @Produce     json
+// @Security    BearerAuth
+// @Param       id path string true "ID заказа"
+// @Success     201 {object} domain.DeliveryResponse
+// @Failure     400 {object} response.ErrorResponse
+// @Router      /couriers/orders/{id}/take [post]
+func (h *CourierHandler) TakeOrder(c *gin.Context) {
+	userID := c.GetString("userID")
+	orderID := c.Param("id")
+
+	courier, err := h.courierService.GetByUserID(userID)
+	if err != nil {
+		response.Error(c, http.StatusNotFound, err.Error())
+		return
+	}
+
+	delivery, err := h.deliveryService.TakeOrder(courier.ID, orderID)
+	if err != nil {
+		response.Error(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	response.Success(c, http.StatusCreated, delivery)
 }

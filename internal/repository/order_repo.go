@@ -13,6 +13,7 @@ type OrderRepository interface {
 	GetByRestaurantID(restaurantID string) ([]domain.Order, error)
 	UpdateStatus(id string, status domain.OrderStatus) error
 	Delete(id string) error
+	GetAvailable() ([]domain.Order, error)
 }
 
 type orderRepository struct {
@@ -57,4 +58,15 @@ func (r *orderRepository) UpdateStatus(id string, status domain.OrderStatus) err
 
 func (r *orderRepository) Delete(id string) error {
 	return r.db.Delete(&domain.Order{}, "id = ?", id).Error
+}
+
+func (r *orderRepository) GetAvailable() ([]domain.Order, error) {
+	var orders []domain.Order
+	if err := r.db.Where("status = ?", domain.OrderStatusReady).
+		Preload("Items").
+		Preload("Restaurant").
+		Find(&orders).Error; err != nil {
+		return nil, err
+	}
+	return orders, nil
 }

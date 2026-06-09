@@ -12,6 +12,7 @@ type OrderService interface {
 	GetByID(id string) (*domain.OrderResponse, error)
 	GetByUserID(userID string) ([]domain.OrderResponse, error)
 	GetByRestaurantID(restaurantID string) ([]domain.OrderResponse, error)
+	GetAvailable() ([]domain.OrderResponse, error)
 	UpdateStatus(id string, status domain.OrderStatus) error
 	CancelOrder(id string, userID string) error
 }
@@ -87,27 +88,7 @@ func (s *orderService) CreateOrder(userID string, req domain.CreateOrderRequest)
 		return nil, errors.New("ошибка создания заказа")
 	}
 
-	s.assignCourier(order.ID)
-
 	return toOrderResponse(order), nil
-}
-
-func (s *orderService) assignCourier(orderID string) {
-	couriers, err := s.courierRepo.GetAllOnline()
-	if err != nil || len(couriers) == 0 {
-		return
-	}
-
-	courier := couriers[0]
-
-	delivery := &domain.Delivery{
-		OrderID:   orderID,
-		CourierID: courier.ID,
-		Status:    domain.DeliveryStatusAssigned,
-	}
-
-	s.deliveryRepo.Create(delivery)
-	s.courierRepo.UpdateStatus(courier.ID, domain.CourierStatusBusy)
 }
 
 func (s *orderService) GetByID(id string) (*domain.OrderResponse, error) {
@@ -133,6 +114,19 @@ func (s *orderService) GetByUserID(userID string) ([]domain.OrderResponse, error
 
 func (s *orderService) GetByRestaurantID(restaurantID string) ([]domain.OrderResponse, error) {
 	orders, err := s.orderRepo.GetByRestaurantID(restaurantID)
+	if err != nil {
+		return nil, errors.New("ошибка получения заказов")
+	}
+
+	var response []domain.OrderResponse
+	for _, o := range orders {
+		response = append(response, *toOrderResponse(&o))
+	}
+	return response, nil
+}
+
+func (s *orderService) GetAvailable() ([]domain.OrderResponse, error) {
+	orders, err := s.orderRepo.GetAvailable()
 	if err != nil {
 		return nil, errors.New("ошибка получения заказов")
 	}
