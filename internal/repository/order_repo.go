@@ -11,9 +11,10 @@ type OrderRepository interface {
 	GetByID(id string) (*domain.Order, error)
 	GetByUserID(userID string) ([]domain.Order, error)
 	GetByRestaurantID(restaurantID string) ([]domain.Order, error)
+	GetAvailable() ([]domain.Order, error)
 	UpdateStatus(id string, status domain.OrderStatus) error
 	Delete(id string) error
-	GetAvailable() ([]domain.Order, error)
+	GetAll() ([]domain.Order, error)
 }
 
 type orderRepository struct {
@@ -66,6 +67,14 @@ func (r *orderRepository) GetAvailable() ([]domain.Order, error) {
 		Preload("Items").
 		Preload("Restaurant").
 		Find(&orders).Error; err != nil {
+		return nil, err
+	}
+	return orders, nil
+}
+
+func (r *orderRepository) GetAll() ([]domain.Order, error) {
+	var orders []domain.Order
+	if err := r.db.Preload("Items").Find(&orders).Error; err != nil {
 		return nil, err
 	}
 	return orders, nil

@@ -11,6 +11,7 @@ type CourierRepository interface {
 	GetByID(id string) (*domain.Courier, error)
 	GetByUserID(userID string) (*domain.Courier, error)
 	GetAllOnline() ([]domain.Courier, error)
+	GetAll() ([]domain.Courier, error)
 	UpdateStatus(id string, status domain.CourierStatus) error
 	UpdateLocation(id string, lat float64, lng float64) error
 	Delete(id string) error
@@ -47,6 +48,14 @@ func (r *courierRepository) GetByUserID(userID string) (*domain.Courier, error) 
 func (r *courierRepository) GetAllOnline() ([]domain.Courier, error) {
 	var couriers []domain.Courier
 	if err := r.db.Where("status = ?", domain.CourierStatusOnline).Find(&couriers).Error; err != nil {
+		return nil, err
+	}
+	return couriers, nil
+}
+
+func (r *courierRepository) GetAll() ([]domain.Courier, error) {
+	var couriers []domain.Courier
+	if err := r.db.Find(&couriers).Error; err != nil {
 		return nil, err
 	}
 	return couriers, nil

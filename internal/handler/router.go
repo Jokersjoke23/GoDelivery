@@ -17,6 +17,7 @@ type Router struct {
 	order      *OrderHandler
 	courier    *CourierHandler
 	delivery   *DeliveryHandler
+	export     *ExportHandler
 	jwt        jwt.JWT
 }
 
@@ -27,12 +28,12 @@ func NewRouter(
 	order *OrderHandler,
 	courier *CourierHandler,
 	delivery *DeliveryHandler,
+	export *ExportHandler,
 	jwtManager jwt.JWT,
 ) *Router {
 	return &Router{
-		auth: auth, user: user, restaurant: restaurant,
-		order: order, courier: courier, delivery: delivery,
-		jwt: jwtManager,
+		auth: auth, user: user, restaurant: restaurant, order: order,
+		courier: courier, delivery: delivery, export: export, jwt: jwtManager,
 	}
 }
 
@@ -93,6 +94,10 @@ func (r *Router) Setup(engine *gin.Engine) {
 			admin.PUT("orders/:id/status", r.order.UpdateStatus)
 			admin.GET("couriers/online", r.courier.GetAllOnline)
 			admin.PUT("users/:id/role", r.user.AssignRole)
+			admin.POST("exports", r.export.Create)
+			admin.GET("exports", r.export.GetAll)
+			admin.GET("exports/:id", r.export.GetByID)
+			admin.GET("exports/:id/download", r.export.Download)
 		}
 	}
 }

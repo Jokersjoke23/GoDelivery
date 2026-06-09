@@ -1,13 +1,3 @@
-// @title           GoDelivery API
-// @version         1.0
-// @description     REST API для сервиса доставки еды
-
-// @host            localhost:8080
-// @BasePath        /api
-
-// @securityDefinitions.apikey BearerAuth
-// @in header
-// @name Authorization
 package main
 
 import (
@@ -19,6 +9,7 @@ import (
 	"delivery-app/pkg/hasher"
 	"delivery-app/pkg/jwt"
 	"log"
+	"os"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/postgres"
@@ -34,6 +25,8 @@ func main() {
 	}
 	log.Println("подключение к БД успешно")
 
+	os.MkdirAll("exports", 0755)
+
 	jwtManager := jwt.NewJWT(cfg.JWT.SecretKey, cfg.JWT.ExpiresIn)
 	passwordHasher := hasher.NewHasher()
 
@@ -43,6 +36,7 @@ func main() {
 	orderRepo := repository.NewOrderRepository(db)
 	courierRepo := repository.NewCourierRepository(db)
 	deliveryRepo := repository.NewDeliveryRepository(db)
+	exportRepo := repository.NewExportRepository(db)
 
 	authSvc := service.NewAuthService(userRepo, passwordHasher, jwtManager)
 	userSvc := service.NewUserService(userRepo)
@@ -50,6 +44,7 @@ func main() {
 	orderSvc := service.NewOrderService(orderRepo, restaurantRepo, menuItemRepo, courierRepo, deliveryRepo)
 	courierSvc := service.NewCourierService(courierRepo, userRepo)
 	deliverySvc := service.NewDeliveryService(deliveryRepo, orderRepo, courierRepo)
+	exportSvc := service.NewExportService(exportRepo, orderRepo, courierRepo, restaurantRepo)
 
 	authHandler := handler.NewAuthHandler(authSvc)
 	userHandler := handler.NewUserHandler(userSvc)
@@ -57,6 +52,7 @@ func main() {
 	orderHandler := handler.NewOrderHandler(orderSvc)
 	courierHandler := handler.NewCourierHandler(courierSvc, orderSvc, deliverySvc)
 	deliveryHandler := handler.NewDeliveryHandler(deliverySvc, courierSvc)
+	exportHandler := handler.NewExportHandler(exportSvc)
 
 	router := handler.NewRouter(
 		authHandler,
@@ -65,6 +61,7 @@ func main() {
 		orderHandler,
 		courierHandler,
 		deliveryHandler,
+		exportHandler,
 		jwtManager,
 	)
 
