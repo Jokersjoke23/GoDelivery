@@ -1,3 +1,12 @@
+// @title           GoDelivery API
+// @version         1.0
+// @description     REST API для сервиса доставки еды
+// @host            localhost:8080
+// @BasePath        /api
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+
 package main
 
 import (

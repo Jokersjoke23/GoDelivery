@@ -48,7 +48,6 @@ func (s *exportService) Create(req domain.CreateExportRequest) (*domain.ExportRe
 		return nil, errors.New("ошибка создания экспорта")
 	}
 
-	// запускаем генерацию в фоне — не блокирует сервер
 	go s.generate(export.ID, req.Type)
 
 	return toExportResponse(export), nil
@@ -96,7 +95,12 @@ func (s *exportService) fillOrders(f *excelize.File) error {
 	sheet := "Orders"
 	f.SetSheetName("Sheet1", sheet)
 
-	headers := []string{"ID", "Пользователь", "Ресторан", "Сумма", "Статус", "Адрес", "Оплата", "Дата"}
+	headers := []string{
+		"Order ID", "User ID", "Restaurant ID",
+		"Имя пользователя", "Название ресторана",
+		"Сумма", "Статус", "Адрес",
+		"Метод оплаты", "Дата создания", "Дата завершения",
+	}
 	for i, h := range headers {
 		cell, _ := excelize.CoordinatesToCellName(i+1, 1)
 		f.SetCellValue(sheet, cell, h)
@@ -109,22 +113,40 @@ func (s *exportService) fillOrders(f *excelize.File) error {
 
 	for rowIdx, order := range orders {
 		row := rowIdx + 2
+
+		userName := ""
+		if order.User != nil {
+			userName = order.User.Name
+		}
+
+		restaurantName := ""
+		if order.Restaurant != nil {
+			restaurantName = order.Restaurant.Name
+		}
+
+		completedAt := ""
+		if order.Status == domain.OrderStatusDelivered {
+			completedAt = order.UpdatedAt.Format("2006-01-02 15:04:05")
+		}
+
 		values := []interface{}{
 			order.ID,
 			order.UserID,
 			order.RestaurantID,
+			userName,
+			restaurantName,
 			order.TotalPrice,
 			string(order.Status),
 			order.Address,
 			string(order.PaymentMethod),
 			order.CreatedAt.Format("2006-01-02 15:04:05"),
+			completedAt,
 		}
 		for colIdx, val := range values {
 			cell, _ := excelize.CoordinatesToCellName(colIdx+1, row)
 			f.SetCellValue(sheet, cell, val)
 		}
 	}
-
 	return nil
 }
 
@@ -132,7 +154,9 @@ func (s *exportService) fillCouriers(f *excelize.File) error {
 	sheet := "Couriers"
 	f.SetSheetName("Sheet1", sheet)
 
-	headers := []string{"ID", "Пользователь", "Статус", "Широта", "Долгота", "Дата"}
+	headers := []string{
+		"Courier ID", "Имя курьера", "Статус", "Локация (lat)", "Локация (lng)",
+	}
 	for i, h := range headers {
 		cell, _ := excelize.CoordinatesToCellName(i+1, 1)
 		f.SetCellValue(sheet, cell, h)
@@ -145,20 +169,24 @@ func (s *exportService) fillCouriers(f *excelize.File) error {
 
 	for rowIdx, courier := range couriers {
 		row := rowIdx + 2
+
+		courierName := ""
+		if courier.User != nil {
+			courierName = courier.User.Name
+		}
+
 		values := []interface{}{
 			courier.ID,
-			courier.UserID,
+			courierName,
 			string(courier.Status),
 			courier.LocationLat,
 			courier.LocationLng,
-			courier.CreatedAt.Format("2006-01-02 15:04:05"),
 		}
 		for colIdx, val := range values {
 			cell, _ := excelize.CoordinatesToCellName(colIdx+1, row)
 			f.SetCellValue(sheet, cell, val)
 		}
 	}
-
 	return nil
 }
 
@@ -166,7 +194,10 @@ func (s *exportService) fillRestaurants(f *excelize.File) error {
 	sheet := "Restaurants"
 	f.SetSheetName("Sheet1", sheet)
 
-	headers := []string{"ID", "Название", "Адрес", "Телефон", "Статус", "Дата"}
+	headers := []string{
+		"Restaurant ID", "Название", "Адрес",
+		"Телефон", "Статус", "Дата основания", "Дата закрытия",
+	}
 	for i, h := range headers {
 		cell, _ := excelize.CoordinatesToCellName(i+1, 1)
 		f.SetCellValue(sheet, cell, h)
@@ -179,6 +210,12 @@ func (s *exportService) fillRestaurants(f *excelize.File) error {
 
 	for rowIdx, restaurant := range restaurants {
 		row := rowIdx + 2
+
+		closedAt := ""
+		if restaurant.Status == domain.RestaurantStatusClosed {
+			closedAt = restaurant.UpdatedAt.Format("2006-01-02 15:04:05")
+		}
+
 		values := []interface{}{
 			restaurant.ID,
 			restaurant.Name,
@@ -186,13 +223,13 @@ func (s *exportService) fillRestaurants(f *excelize.File) error {
 			restaurant.Phone,
 			string(restaurant.Status),
 			restaurant.CreatedAt.Format("2006-01-02 15:04:05"),
+			closedAt,
 		}
 		for colIdx, val := range values {
 			cell, _ := excelize.CoordinatesToCellName(colIdx+1, row)
 			f.SetCellValue(sheet, cell, val)
 		}
 	}
-
 	return nil
 }
 

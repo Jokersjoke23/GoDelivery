@@ -55,7 +55,9 @@ func (r *courierRepository) GetAllOnline() ([]domain.Courier, error) {
 
 func (r *courierRepository) GetAll() ([]domain.Courier, error) {
 	var couriers []domain.Courier
-	if err := r.db.Find(&couriers).Error; err != nil {
+	if err := r.db.
+		Preload("User").
+		Find(&couriers).Error; err != nil {
 		return nil, err
 	}
 	return couriers, nil

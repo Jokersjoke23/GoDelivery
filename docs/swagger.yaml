@@ -62,6 +62,15 @@ definitions:
     - CourierStatusOnline
     - CourierStatusOffline
     - CourierStatusBusy
+  domain.CreateExportRequest:
+    properties:
+      filters:
+        type: string
+      type:
+        $ref: '#/definitions/domain.ExportType'
+    required:
+    - type
+    type: object
   domain.CreateMenuItemRequest:
     properties:
       is_available:
@@ -202,6 +211,39 @@ definitions:
     - DeliveryStatusOnTheWay
     - DeliveryStatusDelivered
     - DeliveryStatusFailed
+  domain.ExportResponse:
+    properties:
+      created_at:
+        type: string
+      file_path:
+        type: string
+      id:
+        type: string
+      status:
+        $ref: '#/definitions/domain.ExportStatus'
+      type:
+        $ref: '#/definitions/domain.ExportType'
+    type: object
+  domain.ExportStatus:
+    enum:
+    - pending
+    - done
+    - failed
+    type: string
+    x-enum-varnames:
+    - ExportStatusPending
+    - ExportStatusDone
+    - ExportStatusFailed
+  domain.ExportType:
+    enum:
+    - orders
+    - couriers
+    - restaurants
+    type: string
+    x-enum-varnames:
+    - ExportTypeOrders
+    - ExportTypeCouriers
+    - ExportTypeRestaurants
   domain.LoginRequest:
     properties:
       email:
@@ -524,6 +566,98 @@ paths:
       summary: Онлайн курьеры (admin)
       tags:
       - couriers
+  /admin/exports:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/domain.ExportResponse'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: История экспортов
+      tags:
+      - exports
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Тип экспорта
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/domain.CreateExportRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/domain.ExportResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Создать экспорт
+      tags:
+      - exports
+  /admin/exports/{id}:
+    get:
+      parameters:
+      - description: ID экспорта
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.ExportResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Статус экспорта
+      tags:
+      - exports
+  /admin/exports/{id}/download:
+    get:
+      parameters:
+      - description: ID экспорта
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/octet-stream
+      responses:
+        "200":
+          description: OK
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Скачать файл экспорта
+      tags:
+      - exports
   /admin/orders/{id}/status:
     put:
       consumes:

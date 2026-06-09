@@ -1,5 +1,6 @@
 .env
 *.exe
 *.test
+*.xlsx
 /tmp
 vendor/

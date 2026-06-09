@@ -48,6 +48,156 @@ const docTemplate = `{
                 }
             }
         },
+        "/admin/exports": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "exports"
+                ],
+                "summary": "История экспортов",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/domain.ExportResponse"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "exports"
+                ],
+                "summary": "Создать экспорт",
+                "parameters": [
+                    {
+                        "description": "Тип экспорта",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/domain.CreateExportRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ExportResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/exports/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "exports"
+                ],
+                "summary": "Статус экспорта",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID экспорта",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ExportResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/exports/{id}/download": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/octet-stream"
+                ],
+                "tags": [
+                    "exports"
+                ],
+                "summary": "Скачать файл экспорта",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID экспорта",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/admin/orders/{id}/status": {
             "put": {
                 "security": [
@@ -1455,6 +1605,20 @@ const docTemplate = `{
                 "CourierStatusBusy"
             ]
         },
+        "domain.CreateExportRequest": {
+            "type": "object",
+            "required": [
+                "type"
+            ],
+            "properties": {
+                "filters": {
+                    "type": "string"
+                },
+                "type": {
+                    "$ref": "#/definitions/domain.ExportType"
+                }
+            }
+        },
         "domain.CreateMenuItemRequest": {
             "type": "object",
             "required": [
@@ -1650,6 +1814,52 @@ const docTemplate = `{
                 "DeliveryStatusOnTheWay",
                 "DeliveryStatusDelivered",
                 "DeliveryStatusFailed"
+            ]
+        },
+        "domain.ExportResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "file_path": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "status": {
+                    "$ref": "#/definitions/domain.ExportStatus"
+                },
+                "type": {
+                    "$ref": "#/definitions/domain.ExportType"
+                }
+            }
+        },
+        "domain.ExportStatus": {
+            "type": "string",
+            "enum": [
+                "pending",
+                "done",
+                "failed"
+            ],
+            "x-enum-varnames": [
+                "ExportStatusPending",
+                "ExportStatusDone",
+                "ExportStatusFailed"
+            ]
+        },
+        "domain.ExportType": {
+            "type": "string",
+            "enum": [
+                "orders",
+                "couriers",
+                "restaurants"
+            ],
+            "x-enum-varnames": [
+                "ExportTypeOrders",
+                "ExportTypeCouriers",
+                "ExportTypeRestaurants"
             ]
         },
         "domain.LoginRequest": {

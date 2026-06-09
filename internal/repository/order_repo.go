@@ -74,7 +74,10 @@ func (r *orderRepository) GetAvailable() ([]domain.Order, error) {
 
 func (r *orderRepository) GetAll() ([]domain.Order, error) {
 	var orders []domain.Order
-	if err := r.db.Preload("Items").Find(&orders).Error; err != nil {
+	if err := r.db.
+		Preload("User").
+		Preload("Restaurant").
+		Find(&orders).Error; err != nil {
 		return nil, err
 	}
 	return orders, nil
