@@ -121,7 +121,10 @@ func (s *exportService) fillOrders(f *excelize.File) error {
 
 		restaurantName := ""
 		if order.Restaurant != nil {
-			restaurantName = order.Restaurant.Name
+			restaurantName = order.Restaurant.NameEn
+			if restaurantName == "" {
+				restaurantName = order.Restaurant.NameRu
+			}
 		}
 
 		completedAt := ""
@@ -218,7 +221,12 @@ func (s *exportService) fillRestaurants(f *excelize.File) error {
 
 		values := []interface{}{
 			restaurant.ID,
-			restaurant.Name,
+			func() string {
+				if restaurant.NameEn != "" {
+					return restaurant.NameEn
+				}
+				return restaurant.NameRu
+			}(),
 			restaurant.Address,
 			restaurant.Phone,
 			string(restaurant.Status),
