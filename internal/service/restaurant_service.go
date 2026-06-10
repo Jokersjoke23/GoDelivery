@@ -4,6 +4,8 @@ import (
 	"delivery-app/internal/domain"
 	"delivery-app/internal/repository"
 	"errors"
+
+	"github.com/xuri/excelize/v2"
 )
 
 type RestaurantService interface {
@@ -16,6 +18,7 @@ type RestaurantService interface {
 	AddMenuItem(restaurantID string, req domain.CreateMenuItemRequest) (*domain.MenuItemResponse, error)
 	UpdateMenuItem(id string, req domain.UpdateMenuItemRequest) (*domain.MenuItemResponse, error)
 	DeleteMenuItem(id string) error
+	ImportFromExcel(ownerID string, filePath string) (*domain.ImportResult, error)
 }
 
 type restaurantService struct {
@@ -194,4 +197,52 @@ func toMenuItemResponse(m *domain.MenuItem) *domain.MenuItemResponse {
 		Price:        m.Price,
 		IsAvailable:  m.IsAvailable,
 	}
+}
+
+func (s *restaurantService) ImportFromExcel(ownerID string, filePath string) (*domain.ImportResult, error) {
+	f, err := excelize.OpenFile(filePath)
+	if err != nil {
+		return nil, errors.New("ошибка открытия файла")
+	}
+	defer f.Close()
+
+	rows, err := f.GetRows("Restaurants")
+	if err != nil {
+		return nil, errors.New("лист Restaurants не найден")
+	}
+
+	result := &domain.ImportResult{}
+
+	for i, row := range rows {
+		if i == 0 {
+			continue
+		}
+		if len(row) < 6 {
+			result.Failed++
+			continue
+		}
+
+		ownerID := row[1]
+		nameEn := row[2]
+		address := row[3]
+		phone := row[4]
+		status := domain.RestaurantStatus(row[5])
+
+		restaurant := &domain.Restaurant{
+			OwnerID: ownerID,
+			NameEn:  nameEn,
+			Address: address,
+			Phone:   phone,
+			Status:  status,
+		}
+
+		if err := s.restaurantRepo.Create(restaurant); err != nil {
+			result.Failed++
+			continue
+		}
+
+		result.Created++
+	}
+
+	return result, nil
 }

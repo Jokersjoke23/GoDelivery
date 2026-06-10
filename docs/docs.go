@@ -252,6 +252,48 @@ const docTemplate = `{
                 }
             }
         },
+        "/admin/restaurants/import": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "restaurants"
+                ],
+                "summary": "Импорт ресторанов из Excel",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "Excel файл",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ImportResult"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/admin/users": {
             "get": {
                 "security": [
@@ -1861,6 +1903,17 @@ const docTemplate = `{
                 "ExportTypeCouriers",
                 "ExportTypeRestaurants"
             ]
+        },
+        "domain.ImportResult": {
+            "type": "object",
+            "properties": {
+                "created": {
+                    "type": "integer"
+                },
+                "failed": {
+                    "type": "integer"
+                }
+            }
         },
         "domain.LoginRequest": {
             "type": "object",

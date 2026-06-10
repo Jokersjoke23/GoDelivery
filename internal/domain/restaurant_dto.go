@@ -47,3 +47,8 @@ type MenuItemResponse struct {
 	Price        float64 `json:"price"`
 	IsAvailable  bool    `json:"is_available"`
 }
+
+type ImportResult struct {
+	Created int `json:"created"`
+	Failed  int `json:"failed"`
+}

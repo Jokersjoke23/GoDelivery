@@ -35,6 +35,7 @@ func main() {
 	log.Println("подключение к БД успешно")
 
 	os.MkdirAll("exports", 0755)
+	os.MkdirAll("imports", 0755)
 
 	jwtManager := jwt.NewJWT(cfg.JWT.SecretKey, cfg.JWT.ExpiresIn)
 	passwordHasher := hasher.NewHasher()

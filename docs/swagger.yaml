@@ -244,6 +244,13 @@ definitions:
     - ExportTypeOrders
     - ExportTypeCouriers
     - ExportTypeRestaurants
+  domain.ImportResult:
+    properties:
+      created:
+        type: integer
+      failed:
+        type: integer
+    type: object
   domain.LoginRequest:
     properties:
       email:
@@ -692,6 +699,32 @@ paths:
       summary: Обновить статус заказа (admin)
       tags:
       - orders
+  /admin/restaurants/import:
+    post:
+      consumes:
+      - multipart/form-data
+      parameters:
+      - description: Excel файл
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.ImportResult'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Импорт ресторанов из Excel
+      tags:
+      - restaurants
   /admin/users:
     get:
       produces:

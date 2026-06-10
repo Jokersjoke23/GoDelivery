@@ -98,6 +98,7 @@ func (r *Router) Setup(engine *gin.Engine) {
 			admin.GET("exports", r.export.GetAll)
 			admin.GET("exports/:id", r.export.GetByID)
 			admin.GET("exports/:id/download", r.export.Download)
+			admin.POST("restaurants/import", r.restaurant.ImportFromExcel)
 		}
 	}
 }

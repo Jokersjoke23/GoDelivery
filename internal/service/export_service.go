@@ -198,7 +198,7 @@ func (s *exportService) fillRestaurants(f *excelize.File) error {
 	f.SetSheetName("Sheet1", sheet)
 
 	headers := []string{
-		"Restaurant ID", "Название", "Адрес",
+		"Restaurant ID", "Owner ID", "Название", "Адрес",
 		"Телефон", "Статус", "Дата основания", "Дата закрытия",
 	}
 	for i, h := range headers {
@@ -221,6 +221,7 @@ func (s *exportService) fillRestaurants(f *excelize.File) error {
 
 		values := []interface{}{
 			restaurant.ID,
+			restaurant.OwnerID,
 			func() string {
 				if restaurant.NameEn != "" {
 					return restaurant.NameEn

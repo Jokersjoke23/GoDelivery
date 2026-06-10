@@ -5,6 +5,7 @@ import (
 	"delivery-app/internal/service"
 	"delivery-app/pkg/response"
 	"net/http"
+	"path/filepath"
 
 	"github.com/gin-gonic/gin"
 )
@@ -180,4 +181,42 @@ func (h *RestaurantHandler) DeleteMenuItem(c *gin.Context) {
 		return
 	}
 	response.Success(c, http.StatusOK, gin.H{"message": "блюдо удалено"})
+}
+
+// @Summary     Импорт ресторанов из Excel
+// @Tags        restaurants
+// @Accept      multipart/form-data
+// @Produce     json
+// @Security    BearerAuth
+// @Param       file formData file true "Excel файл"
+// @Success     200 {object} domain.ImportResult
+// @Failure     400 {object} response.ErrorResponse
+// @Router      /admin/restaurants/import [post]
+func (h *RestaurantHandler) ImportFromExcel(c *gin.Context) {
+	ownerID := c.GetString("userID")
+
+	file, err := c.FormFile("file")
+	if err != nil {
+		response.Error(c, http.StatusBadRequest, "файл не найден")
+		return
+	}
+
+	if filepath.Ext(file.Filename) != ".xlsx" {
+		response.Error(c, http.StatusBadRequest, "только .xlsx файлы")
+		return
+	}
+
+	filePath := "imports/" + file.Filename
+	if err := c.SaveUploadedFile(file, filePath); err != nil {
+		response.Error(c, http.StatusBadRequest, "ошибка сохранения файла")
+		return
+	}
+
+	result, err := h.restaurantService.ImportFromExcel(ownerID, filePath)
+	if err != nil {
+		response.Error(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	response.Success(c, http.StatusOK, result)
 }
