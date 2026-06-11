@@ -3,8 +3,12 @@ package service
 import (
 	"delivery-app/internal/domain"
 	"delivery-app/internal/repository"
+	ws "delivery-app/internal/websocket"
+	"encoding/json"
 	"errors"
 	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
 type OrderService interface {
@@ -23,6 +27,7 @@ type orderService struct {
 	menuItemRepo   repository.MenuItemRepository
 	courierRepo    repository.CourierRepository
 	deliveryRepo   repository.DeliveryRepository
+	hub            *ws.Hub
 }
 
 func NewOrderService(
@@ -31,6 +36,7 @@ func NewOrderService(
 	menuItemRepo repository.MenuItemRepository,
 	courierRepo repository.CourierRepository,
 	deliveryRepo repository.DeliveryRepository,
+	hub *ws.Hub,
 ) OrderService {
 	return &orderService{
 		orderRepo:      orderRepo,
@@ -38,6 +44,7 @@ func NewOrderService(
 		menuItemRepo:   menuItemRepo,
 		courierRepo:    courierRepo,
 		deliveryRepo:   deliveryRepo,
+		hub:            hub,
 	}
 }
 
@@ -87,6 +94,12 @@ func (s *orderService) CreateOrder(userID string, req domain.CreateOrderRequest)
 	if err := s.orderRepo.Create(order); err != nil {
 		return nil, errors.New("ошибка создания заказа")
 	}
+
+	msg, _ := json.Marshal(gin.H{
+		"event": "new_order",
+		"data":  toOrderResponse(order),
+	})
+	s.hub.Broadcast(msg)
 
 	return toOrderResponse(order), nil
 }

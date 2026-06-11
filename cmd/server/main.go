@@ -15,6 +15,7 @@ import (
 	"delivery-app/internal/middleware"
 	"delivery-app/internal/repository"
 	"delivery-app/internal/service"
+	"delivery-app/internal/websocket"
 	"delivery-app/pkg/hasher"
 	"delivery-app/pkg/jwt"
 	"log"
@@ -48,10 +49,13 @@ func main() {
 	deliveryRepo := repository.NewDeliveryRepository(db)
 	exportRepo := repository.NewExportRepository(db)
 
+	hub := websocket.NewHub()
+	go hub.Run()
+
 	authSvc := service.NewAuthService(userRepo, passwordHasher, jwtManager)
 	userSvc := service.NewUserService(userRepo)
 	restaurantSvc := service.NewRestaurantService(restaurantRepo, menuItemRepo)
-	orderSvc := service.NewOrderService(orderRepo, restaurantRepo, menuItemRepo, courierRepo, deliveryRepo)
+	orderSvc := service.NewOrderService(orderRepo, restaurantRepo, menuItemRepo, courierRepo, deliveryRepo, hub)
 	courierSvc := service.NewCourierService(courierRepo, userRepo)
 	deliverySvc := service.NewDeliveryService(deliveryRepo, orderRepo, courierRepo)
 	exportSvc := service.NewExportService(exportRepo, orderRepo, courierRepo, restaurantRepo)
@@ -63,6 +67,7 @@ func main() {
 	courierHandler := handler.NewCourierHandler(courierSvc, orderSvc, deliverySvc)
 	deliveryHandler := handler.NewDeliveryHandler(deliverySvc, courierSvc)
 	exportHandler := handler.NewExportHandler(exportSvc)
+	wsHandler := handler.NewWSHandler(hub, courierSvc)
 
 	router := handler.NewRouter(
 		authHandler,
@@ -73,6 +78,7 @@ func main() {
 		deliveryHandler,
 		exportHandler,
 		jwtManager,
+		wsHandler,
 	)
 
 	engine := gin.Default()
