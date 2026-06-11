@@ -13,6 +13,7 @@ type DeliveryService interface {
 	GetByCourierID(courierID string) ([]domain.DeliveryResponse, error)
 	UpdateStatus(id string, status domain.DeliveryStatus) error
 	TakeOrder(courierID string, orderID string) (*domain.DeliveryResponse, error)
+	NextStatus(id string, courierID string) error
 }
 
 type deliveryService struct {
@@ -115,9 +116,10 @@ func (s *deliveryService) TakeOrder(courierID string, orderID string) (*domain.D
 	}
 
 	delivery := &domain.Delivery{
-		OrderID:   orderID,
-		CourierID: courierID,
-		Status:    domain.DeliveryStatusAssigned,
+		OrderID:       orderID,
+		CourierID:     courierID,
+		Status:        domain.DeliveryStatusAssigned,
+		DeliveryPrice: 1000,
 	}
 
 	if err := s.deliveryRepo.Create(delivery); err != nil {
@@ -128,4 +130,30 @@ func (s *deliveryService) TakeOrder(courierID string, orderID string) (*domain.D
 	s.courierRepo.UpdateStatus(courierID, domain.CourierStatusBusy)
 
 	return toDeliveryResponse(delivery), nil
+}
+
+func (s *deliveryService) NextStatus(id string, courierID string) error {
+	delivery, err := s.deliveryRepo.GetByID(id)
+	if err != nil {
+		return errors.New("доставка не найдена")
+	}
+
+	if delivery.CourierID != courierID {
+		return errors.New("нет прав на эту доставку")
+	}
+
+	var nextStatus domain.DeliveryStatus
+
+	switch delivery.Status {
+	case domain.DeliveryStatusAssigned:
+		nextStatus = domain.DeliveryStatusPickedUp
+	case domain.DeliveryStatusPickedUp:
+		nextStatus = domain.DeliveryStatusOnTheWay
+	case domain.DeliveryStatusOnTheWay:
+		nextStatus = domain.DeliveryStatusDelivered
+	default:
+		return errors.New("доставка уже завершена")
+	}
+
+	return s.UpdateStatus(id, nextStatus)
 }

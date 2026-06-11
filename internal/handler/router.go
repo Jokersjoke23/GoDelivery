@@ -84,7 +84,7 @@ func (r *Router) Setup(engine *gin.Engine) {
 		protected.DELETE("couriers/me", r.courier.DeleteProfile)
 
 		protected.GET("deliveries/:id", r.delivery.GetByID)
-		protected.PUT("deliveries/:id/status", r.delivery.UpdateStatus)
+		protected.POST("deliveries/:id/next-status", r.delivery.NextStatus)
 
 		admin := protected.Group("/admin")
 		admin.Use(middleware.RoleMiddleware("admin"))
@@ -99,6 +99,7 @@ func (r *Router) Setup(engine *gin.Engine) {
 			admin.GET("exports/:id", r.export.GetByID)
 			admin.GET("exports/:id/download", r.export.Download)
 			admin.POST("restaurants/import", r.restaurant.ImportFromExcel)
+			admin.PUT("deliveries/:id/status", r.delivery.UpdateStatus)
 		}
 	}
 }

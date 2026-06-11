@@ -104,3 +104,29 @@ func (h *DeliveryHandler) UpdateStatus(c *gin.Context) {
 	}
 	response.Success(c, http.StatusOK, gin.H{"message": "статус доставки обновлён"})
 }
+
+// @Summary     Следующий статус доставки
+// @Tags        deliveries
+// @Produce     json
+// @Security    BearerAuth
+// @Param       id path string true "ID доставки"
+// @Success     200 {object} response.SuccessResponse
+// @Failure     400 {object} response.ErrorResponse
+// @Router      /deliveries/{id}/next-status [post]
+func (h *DeliveryHandler) NextStatus(c *gin.Context) {
+	id := c.Param("id")
+	userID := c.GetString("userID")
+
+	courier, err := h.courierService.GetByUserID(userID)
+	if err != nil {
+		response.Error(c, http.StatusNotFound, "курьер не найден")
+		return
+	}
+
+	if err := h.deliveryService.NextStatus(id, courier.ID); err != nil {
+		response.Error(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	response.Success(c, http.StatusOK, gin.H{"message": "статус обновлён"})
+}

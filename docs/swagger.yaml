@@ -167,6 +167,8 @@ definitions:
         type: string
       delivered_at:
         type: string
+      delivery_price:
+        type: number
       id:
         type: string
       order:
@@ -280,6 +282,21 @@ definitions:
       restaurant_id:
         type: string
       updated_at:
+        type: string
+    type: object
+  domain.MenuItemResponse:
+    properties:
+      id:
+        type: string
+      is_available:
+        type: boolean
+      name_en:
+        type: string
+      name_ru:
+        type: string
+      price:
+        type: number
+      restaurant_id:
         type: string
     type: object
   domain.Order:
@@ -1069,6 +1086,30 @@ paths:
       summary: Доставка по ID
       tags:
       - deliveries
+  /deliveries/{id}/next-status:
+    post:
+      parameters:
+      - description: ID доставки
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Следующий статус доставки
+      tags:
+      - deliveries
   /deliveries/{id}/status:
     put:
       consumes:
@@ -1347,6 +1388,29 @@ paths:
       tags:
       - restaurants
   /restaurants/{id}/menu:
+    get:
+      parameters:
+      - description: ID ресторана
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/domain.MenuItemResponse'
+            type: array
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Меню ресторана
+      tags:
+      - restaurants
     post:
       consumes:
       - application/json
@@ -1428,6 +1492,27 @@ paths:
       security:
       - BearerAuth: []
       summary: Удалить блюдо
+      tags:
+      - restaurants
+    get:
+      parameters:
+      - description: ID блюда
+        in: path
+        name: itemID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.MenuItemResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Блюдо по ID
       tags:
       - restaurants
     put:

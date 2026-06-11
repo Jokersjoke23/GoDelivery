@@ -9,6 +9,7 @@ import (
 type MenuItemRepository interface {
 	Create(item *domain.MenuItem) error
 	GetByID(id string) (*domain.MenuItem, error)
+	GetByRestaurantID(restaurantID string) ([]domain.MenuItem, error)
 	Update(item *domain.MenuItem) error
 	Delete(id string) error
 }
@@ -31,6 +32,14 @@ func (r *menuItemRepository) GetByID(id string) (*domain.MenuItem, error) {
 		return nil, err
 	}
 	return &item, nil
+}
+
+func (r *menuItemRepository) GetByRestaurantID(restaurantID string) ([]domain.MenuItem, error) {
+	var items []domain.MenuItem
+	if err := r.db.Where("restaurant_id = ?", restaurantID).Find(&items).Error; err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 func (r *menuItemRepository) Update(item *domain.MenuItem) error {

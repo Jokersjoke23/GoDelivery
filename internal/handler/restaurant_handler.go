@@ -220,3 +220,41 @@ func (h *RestaurantHandler) ImportFromExcel(c *gin.Context) {
 
 	response.Success(c, http.StatusOK, result)
 }
+
+// @Summary     Меню ресторана
+// @Tags        restaurants
+// @Produce     json
+// @Param       id path string true "ID ресторана"
+// @Success     200 {object} []domain.MenuItemResponse
+// @Failure     404 {object} response.ErrorResponse
+// @Router      /restaurants/{id}/menu [get]
+func (h *RestaurantHandler) GetMenu(c *gin.Context) {
+	restaurantID := c.Param("id")
+
+	items, err := h.restaurantService.GetMenu(restaurantID)
+	if err != nil {
+		response.Error(c, http.StatusNotFound, err.Error())
+		return
+	}
+
+	response.Success(c, http.StatusOK, items)
+}
+
+// @Summary     Блюдо по ID
+// @Tags        restaurants
+// @Produce     json
+// @Param       itemID path string true "ID блюда"
+// @Success     200 {object} domain.MenuItemResponse
+// @Failure     404 {object} response.ErrorResponse
+// @Router      /restaurants/menu/{itemID} [get]
+func (h *RestaurantHandler) GetMenuItem(c *gin.Context) {
+	itemID := c.Param("itemID")
+
+	item, err := h.restaurantService.GetMenuItem(itemID)
+	if err != nil {
+		response.Error(c, http.StatusNotFound, err.Error())
+		return
+	}
+
+	response.Success(c, http.StatusOK, item)
+}

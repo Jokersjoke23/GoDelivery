@@ -18,6 +18,8 @@ type RestaurantService interface {
 	AddMenuItem(restaurantID string, req domain.CreateMenuItemRequest) (*domain.MenuItemResponse, error)
 	UpdateMenuItem(id string, req domain.UpdateMenuItemRequest) (*domain.MenuItemResponse, error)
 	DeleteMenuItem(id string) error
+	GetMenu(restaurantID string) ([]domain.MenuItemResponse, error)
+	GetMenuItem(id string) (*domain.MenuItemResponse, error)
 	ImportFromExcel(ownerID string, filePath string) (*domain.ImportResult, error)
 }
 
@@ -197,6 +199,27 @@ func toMenuItemResponse(m *domain.MenuItem) *domain.MenuItemResponse {
 		Price:        m.Price,
 		IsAvailable:  m.IsAvailable,
 	}
+}
+
+func (s *restaurantService) GetMenu(restaurantID string) ([]domain.MenuItemResponse, error) {
+	items, err := s.menuItemRepo.GetByRestaurantID(restaurantID)
+	if err != nil {
+		return nil, errors.New("ошибка получения меню")
+	}
+
+	var response []domain.MenuItemResponse
+	for _, item := range items {
+		response = append(response, *toMenuItemResponse(&item))
+	}
+	return response, nil
+}
+
+func (s *restaurantService) GetMenuItem(id string) (*domain.MenuItemResponse, error) {
+	item, err := s.menuItemRepo.GetByID(id)
+	if err != nil {
+		return nil, errors.New("блюдо не найдено")
+	}
+	return toMenuItemResponse(item), nil
 }
 
 func (s *restaurantService) ImportFromExcel(ownerID string, filePath string) (*domain.ImportResult, error) {
