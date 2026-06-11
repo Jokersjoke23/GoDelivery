@@ -52,6 +52,8 @@ func (r *Router) Setup(engine *gin.Engine) {
 
 	api.GET("/restaurants", r.restaurant.GetAll)
 	api.GET("/restaurants/:id", r.restaurant.GetByID)
+	api.GET("/restaurants/:id/menu", r.restaurant.GetMenu)
+	api.GET("/restaurants/menu/:itemID", r.restaurant.GetMenuItem)
 
 	protected := api.Group("/")
 	protected.Use(middleware.AuthMiddleware(r.jwt))
