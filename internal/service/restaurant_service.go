@@ -5,6 +5,7 @@ import (
 	"delivery-app/internal/repository"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/xuri/excelize/v2"
 )
@@ -301,7 +302,11 @@ func (s *restaurantService) ImportMenuFromExcel(filePath string) (*domain.Import
 		nameEn := row[3]
 		price := 0.0
 		fmt.Sscanf(row[4], "%f", &price)
-		isAvailable := row[5] == "TRUE" || row[5] == "True"
+		isAvailable := false
+		if len(row) > 5 {
+			val := strings.ToLower(strings.TrimSpace(row[5]))
+			isAvailable = val == "true" || val == "1" || val == "TRUE"
+		}
 
 		item := &domain.MenuItem{
 			RestaurantID: restaurantID,
