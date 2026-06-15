@@ -13,6 +13,7 @@ const (
 	ExportTypeOrders      ExportType = "orders"
 	ExportTypeCouriers    ExportType = "couriers"
 	ExportTypeRestaurants ExportType = "restaurants"
+	ExportTypeMenu        ExportType = "menu"
 )
 
 const (

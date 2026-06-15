@@ -21,6 +21,7 @@ type exportService struct {
 	orderRepo      repository.OrderRepository
 	courierRepo    repository.CourierRepository
 	restaurantRepo repository.RestaurantRepository
+	menuItemRepo   repository.MenuItemRepository
 }
 
 func NewExportService(
@@ -28,12 +29,14 @@ func NewExportService(
 	orderRepo repository.OrderRepository,
 	courierRepo repository.CourierRepository,
 	restaurantRepo repository.RestaurantRepository,
+	menuItemRepo repository.MenuItemRepository,
 ) ExportService {
 	return &exportService{
 		exportRepo:     exportRepo,
 		orderRepo:      orderRepo,
 		courierRepo:    courierRepo,
 		restaurantRepo: restaurantRepo,
+		menuItemRepo:   menuItemRepo,
 	}
 }
 
@@ -77,6 +80,10 @@ func (s *exportService) generateFile(exportType domain.ExportType) (string, erro
 		}
 	case domain.ExportTypeRestaurants:
 		if err := s.fillRestaurants(f); err != nil {
+			return "", err
+		}
+	case domain.ExportTypeMenu:
+		if err := s.fillMenu(f); err != nil {
 			return "", err
 		}
 	default:
@@ -198,7 +205,7 @@ func (s *exportService) fillRestaurants(f *excelize.File) error {
 	f.SetSheetName("Sheet1", sheet)
 
 	headers := []string{
-		"Restaurant ID", "Owner ID", "Название", "Адрес",
+		"Restaurant ID", "Owner ID", "Название RU", "Название EN", "Адрес",
 		"Телефон", "Статус", "Дата основания", "Дата закрытия",
 	}
 	for i, h := range headers {
@@ -222,12 +229,8 @@ func (s *exportService) fillRestaurants(f *excelize.File) error {
 		values := []interface{}{
 			restaurant.ID,
 			restaurant.OwnerID,
-			func() string {
-				if restaurant.NameEn != "" {
-					return restaurant.NameEn
-				}
-				return restaurant.NameRu
-			}(),
+			restaurant.NameRu,
+			restaurant.NameEn,
 			restaurant.Address,
 			restaurant.Phone,
 			string(restaurant.Status),
@@ -237,6 +240,50 @@ func (s *exportService) fillRestaurants(f *excelize.File) error {
 		for colIdx, val := range values {
 			cell, _ := excelize.CoordinatesToCellName(colIdx+1, row)
 			f.SetCellValue(sheet, cell, val)
+		}
+	}
+	return nil
+}
+
+func (s *exportService) fillMenu(f *excelize.File) error {
+	sheet := "Menu"
+	f.SetSheetName("Sheet1", sheet)
+
+	headers := []string{
+		"Menu Item ID", "Restaurant ID", "Название RU", "Название EN",
+		"Цена", "Доступно",
+	}
+	for i, h := range headers {
+		cell, _ := excelize.CoordinatesToCellName(i+1, 1)
+		f.SetCellValue(sheet, cell, h)
+	}
+
+	restaurants, err := s.restaurantRepo.GetAll()
+	if err != nil {
+		return err
+	}
+
+	row := 2
+	for _, restaurant := range restaurants {
+		items, err := s.menuItemRepo.GetByRestaurantID(restaurant.ID)
+		if err != nil {
+			continue
+		}
+
+		for _, item := range items {
+			values := []interface{}{
+				item.ID,
+				item.RestaurantID,
+				item.NameRu,
+				item.NameEn,
+				item.Price,
+				item.IsAvailable,
+			}
+			for colIdx, val := range values {
+				cell, _ := excelize.CoordinatesToCellName(colIdx+1, row)
+				f.SetCellValue(sheet, cell, val)
+			}
+			row++
 		}
 	}
 	return nil

@@ -241,11 +241,13 @@ definitions:
     - orders
     - couriers
     - restaurants
+    - menu
     type: string
     x-enum-varnames:
     - ExportTypeOrders
     - ExportTypeCouriers
     - ExportTypeRestaurants
+    - ExportTypeMenu
   domain.ImportResult:
     properties:
       created:
@@ -271,8 +273,6 @@ definitions:
         type: string
       is_available:
         type: boolean
-      name:
-        type: string
       name_en:
         type: string
       name_ru:
@@ -439,8 +439,6 @@ definitions:
         items:
           $ref: '#/definitions/domain.MenuItem'
         type: array
-      name:
-        type: string
       name_en:
         type: string
       name_ru:
@@ -740,6 +738,32 @@ paths:
       security:
       - BearerAuth: []
       summary: Импорт ресторанов из Excel
+      tags:
+      - restaurants
+  /admin/restaurants/menu/import:
+    post:
+      consumes:
+      - multipart/form-data
+      parameters:
+      - description: Excel файл
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.ImportResult'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Импорт меню из Excel
       tags:
       - restaurants
   /admin/users:

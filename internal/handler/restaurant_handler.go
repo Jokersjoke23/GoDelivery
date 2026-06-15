@@ -258,3 +258,39 @@ func (h *RestaurantHandler) GetMenuItem(c *gin.Context) {
 
 	response.Success(c, http.StatusOK, item)
 }
+
+// @Summary     Импорт меню из Excel
+// @Tags        restaurants
+// @Accept      multipart/form-data
+// @Produce     json
+// @Security    BearerAuth
+// @Param       file formData file true "Excel файл"
+// @Success     200 {object} domain.ImportResult
+// @Failure     400 {object} response.ErrorResponse
+// @Router      /admin/restaurants/menu/import [post]
+func (h *RestaurantHandler) ImportMenuFromExcel(c *gin.Context) {
+	file, err := c.FormFile("file")
+	if err != nil {
+		response.Error(c, http.StatusBadRequest, "файл не найден")
+		return
+	}
+
+	if filepath.Ext(file.Filename) != ".xlsx" {
+		response.Error(c, http.StatusBadRequest, "только .xlsx файлы")
+		return
+	}
+
+	filePath := "imports/" + file.Filename
+	if err := c.SaveUploadedFile(file, filePath); err != nil {
+		response.Error(c, http.StatusBadRequest, "ошибка сохранения файла")
+		return
+	}
+
+	result, err := h.restaurantService.ImportMenuFromExcel(filePath)
+	if err != nil {
+		response.Error(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	response.Success(c, http.StatusOK, result)
+}

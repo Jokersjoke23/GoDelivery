@@ -58,7 +58,7 @@ func main() {
 	orderSvc := service.NewOrderService(orderRepo, restaurantRepo, menuItemRepo, courierRepo, deliveryRepo, hub)
 	courierSvc := service.NewCourierService(courierRepo, userRepo)
 	deliverySvc := service.NewDeliveryService(deliveryRepo, orderRepo, courierRepo)
-	exportSvc := service.NewExportService(exportRepo, orderRepo, courierRepo, restaurantRepo)
+	exportSvc := service.NewExportService(exportRepo, orderRepo, courierRepo, restaurantRepo, menuItemRepo)
 
 	authHandler := handler.NewAuthHandler(authSvc)
 	userHandler := handler.NewUserHandler(userSvc)

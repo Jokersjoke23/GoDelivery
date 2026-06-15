@@ -66,7 +66,11 @@ func (s *orderService) CreateOrder(userID string, req domain.CreateOrderRequest)
 			return nil, errors.New("блюдо не найдено")
 		}
 		if !menuItem.IsAvailable {
-			return nil, errors.New("блюдо недоступно: " + menuItem.Name)
+			name := menuItem.NameEn
+			if name == "" {
+				name = menuItem.NameRu
+			}
+			return nil, errors.New("блюдо недоступно: " + name)
 		}
 		if menuItem.RestaurantID != req.RestaurantID {
 			return nil, errors.New("блюдо не принадлежит этому ресторану")

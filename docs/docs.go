@@ -294,6 +294,48 @@ const docTemplate = `{
                 }
             }
         },
+        "/admin/restaurants/menu/import": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "restaurants"
+                ],
+                "summary": "Импорт меню из Excel",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "Excel файл",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ImportResult"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/admin/users": {
             "get": {
                 "security": [
@@ -2005,12 +2047,14 @@ const docTemplate = `{
             "enum": [
                 "orders",
                 "couriers",
-                "restaurants"
+                "restaurants",
+                "menu"
             ],
             "x-enum-varnames": [
                 "ExportTypeOrders",
                 "ExportTypeCouriers",
-                "ExportTypeRestaurants"
+                "ExportTypeRestaurants",
+                "ExportTypeMenu"
             ]
         },
         "domain.ImportResult": {
@@ -2050,9 +2094,6 @@ const docTemplate = `{
                 },
                 "is_available": {
                     "type": "boolean"
-                },
-                "name": {
-                    "type": "string"
                 },
                 "name_en": {
                     "type": "string"
@@ -2292,9 +2333,6 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/domain.MenuItem"
                     }
-                },
-                "name": {
-                    "type": "string"
                 },
                 "name_en": {
                     "type": "string"

@@ -4,6 +4,7 @@ import (
 	"delivery-app/internal/domain"
 	"delivery-app/internal/repository"
 	"errors"
+	"fmt"
 
 	"github.com/xuri/excelize/v2"
 )
@@ -21,6 +22,7 @@ type RestaurantService interface {
 	GetMenu(restaurantID string) ([]domain.MenuItemResponse, error)
 	GetMenuItem(id string) (*domain.MenuItemResponse, error)
 	ImportFromExcel(ownerID string, filePath string) (*domain.ImportResult, error)
+	ImportMenuFromExcel(filePath string) (*domain.ImportResult, error)
 }
 
 type restaurantService struct {
@@ -240,19 +242,21 @@ func (s *restaurantService) ImportFromExcel(ownerID string, filePath string) (*d
 		if i == 0 {
 			continue
 		}
-		if len(row) < 6 {
+		if len(row) < 7 {
 			result.Failed++
 			continue
 		}
 
 		ownerID := row[1]
-		nameEn := row[2]
-		address := row[3]
-		phone := row[4]
-		status := domain.RestaurantStatus(row[5])
+		nameRu := row[2]
+		nameEn := row[3]
+		address := row[4]
+		phone := row[5]
+		status := domain.RestaurantStatus(row[6])
 
 		restaurant := &domain.Restaurant{
 			OwnerID: ownerID,
+			NameRu:  nameRu,
 			NameEn:  nameEn,
 			Address: address,
 			Phone:   phone,
@@ -260,6 +264,54 @@ func (s *restaurantService) ImportFromExcel(ownerID string, filePath string) (*d
 		}
 
 		if err := s.restaurantRepo.Create(restaurant); err != nil {
+			result.Failed++
+			continue
+		}
+
+		result.Created++
+	}
+
+	return result, nil
+}
+func (s *restaurantService) ImportMenuFromExcel(filePath string) (*domain.ImportResult, error) {
+	f, err := excelize.OpenFile(filePath)
+	if err != nil {
+		return nil, errors.New("ошибка открытия файла")
+	}
+	defer f.Close()
+
+	rows, err := f.GetRows("Menu")
+	if err != nil {
+		return nil, errors.New("лист Menu не найден")
+	}
+
+	result := &domain.ImportResult{}
+
+	for i, row := range rows {
+		if i == 0 {
+			continue
+		}
+		if len(row) < 5 {
+			result.Failed++
+			continue
+		}
+
+		restaurantID := row[1]
+		nameRu := row[2]
+		nameEn := row[3]
+		price := 0.0
+		fmt.Sscanf(row[4], "%f", &price)
+		isAvailable := row[5] == "TRUE" || row[5] == "True"
+
+		item := &domain.MenuItem{
+			RestaurantID: restaurantID,
+			NameRu:       nameRu,
+			NameEn:       nameEn,
+			Price:        price,
+			IsAvailable:  isAvailable,
+		}
+
+		if err := s.menuItemRepo.Create(item); err != nil {
 			result.Failed++
 			continue
 		}

@@ -105,6 +105,7 @@ func (r *Router) Setup(engine *gin.Engine) {
 			admin.GET("exports/:id", r.export.GetByID)
 			admin.GET("exports/:id/download", r.export.Download)
 			admin.POST("restaurants/import", r.restaurant.ImportFromExcel)
+			admin.POST("restaurants/menu/import", r.restaurant.ImportMenuFromExcel)
 			admin.PUT("deliveries/:id/status", r.delivery.UpdateStatus)
 		}
 	}
