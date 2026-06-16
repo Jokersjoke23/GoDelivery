@@ -99,11 +99,13 @@ func (s *orderService) CreateOrder(userID string, req domain.CreateOrderRequest)
 		return nil, errors.New("ошибка создания заказа")
 	}
 
-	msg, _ := json.Marshal(gin.H{
-		"event": "new_order",
-		"data":  toOrderResponse(order),
-	})
-	s.hub.Broadcast(msg)
+	if s.hub != nil {
+		msg, _ := json.Marshal(gin.H{
+			"event": "new_order",
+			"data":  toOrderResponse(order),
+		})
+		s.hub.Broadcast(msg)
+	}
 
 	return toOrderResponse(order), nil
 }
