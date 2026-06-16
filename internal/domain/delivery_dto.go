@@ -12,10 +12,11 @@ type UpdateDeliveryStatusRequest struct {
 }
 
 type DeliveryResponse struct {
-	ID          string         `json:"id"`
-	OrderID     string         `json:"order_id"`
-	CourierID   string         `json:"courier_id"`
-	Status      DeliveryStatus `json:"status"`
-	PickedUpAt  *time.Time     `json:"picked_up_at"`
-	DeliveredAt *time.Time     `json:"delivered_at"`
+	ID            string         `json:"id"`
+	OrderID       string         `json:"order_id"`
+	CourierID     string         `json:"courier_id"`
+	Status        DeliveryStatus `json:"status"`
+	DeliveryPrice float64        `'json:"deliveryprice"'`
+	PickedUpAt    *time.Time     `json:"picked_up_at"`
+	DeliveredAt   *time.Time     `json:"delivered_at"`
 }

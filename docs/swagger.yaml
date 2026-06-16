@@ -188,6 +188,8 @@ definitions:
         type: string
       delivered_at:
         type: string
+      deliveryPrice:
+        type: number
       id:
         type: string
       order_id:

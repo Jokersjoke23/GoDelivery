@@ -91,12 +91,13 @@ func (s *deliveryService) UpdateStatus(id string, status domain.DeliveryStatus) 
 
 func toDeliveryResponse(d *domain.Delivery) *domain.DeliveryResponse {
 	return &domain.DeliveryResponse{
-		ID:          d.ID,
-		OrderID:     d.OrderID,
-		CourierID:   d.CourierID,
-		Status:      d.Status,
-		PickedUpAt:  d.PickedUpAt,
-		DeliveredAt: d.DeliveredAt,
+		ID:            d.ID,
+		OrderID:       d.OrderID,
+		CourierID:     d.CourierID,
+		Status:        d.Status,
+		DeliveryPrice: d.DeliveryPrice,
+		PickedUpAt:    d.PickedUpAt,
+		DeliveredAt:   d.DeliveredAt,
 	}
 }
 
