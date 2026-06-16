@@ -1,59 +1,94 @@
-delivery-app/
+GoDelivery/
+│
 ├── cmd/
 │   └── server/
-│       └── main.go                 # Точка входа, инициализация
-│
-├── internal/
-│   ├── domain/                     # Сущности и бизнес-правила
-│   │   ├── user.go                 # User, Admin
-│   │   ├── restaurant.go           # Restaurant, MenuItem
-│   │   ├── order.go                # Order, OrderItem
-│   │   ├── delivery.go             # Delivery, Courier
-│   │   └── status.go               # Все статусы (enum-like)
-│   │
-│   ├── repository/                 # Работа с БД (интерфейсы + реализация)
-│   │   ├── user_repo.go
-│   │   ├── restaurant_repo.go
-│   │   ├── order_repo.go
-│   │   └── delivery_repo.go
-│   │
-│   ├── service/                    # Бизнес-логика
-│   │   ├── auth_service.go
-│   │   ├── user_service.go
-│   │   ├── restaurant_service.go
-│   │   ├── order_service.go
-│   │   └── delivery_service.go
-│   │
-│   ├── handler/                    # HTTP handlers (controllers)
-│   │   ├── auth_handler.go
-│   │   ├── user_handler.go
-│   │   ├── restaurant_handler.go
-│   │   ├── order_handler.go
-│   │   └── delivery_handler.go
-│   │
-│   └── middleware/
-│       ├── auth.go                 # JWT проверка
-│       └── role.go                 # Проверка ролей (admin, courier...)
-│
-├── pkg/                            # Переиспользуемые пакеты
-│   ├── jwt/
-│   │   └── jwt.go                  # Генерация и парсинг токенов
-│   ├── hasher/
-│   │   └── hasher.go               # Хеширование паролей
-│   └── response/
-│       └── response.go             # Стандартные JSON ответы
+│       └── main.go              # Точка входа — собирает все зависимости и запускает сервер
 │
 ├── config/
-│   └── config.go                   # Конфиг из env переменных
+│   └── config.go                # Загрузка настроек из .env (БД, JWT, порт)
 │
-├── migrations/                     # SQL миграции
-│   ├── 001_create_users.sql
-│   ├── 002_create_restaurants.sql
-│   └── 003_create_orders.sql
+├── docs/                        # Автогенерированная Swagger документация (swag init)
+│   ├── docs.go
+│   ├── swagger.json
+│   └── swagger.yaml
 │
-├── .env.example
-├── go.mod
-└── go.sum
+├── exports/                     # Папка для сгенерированных Excel файлов экспорта
+├── imports/                     # Папка для загруженных Excel файлов импорта
+│
+├── internal/
+│   │
+│   ├── domain/                  # Сущности и структуры данных (сердце проекта)
+│   │   ├── courier.go           # Модель курьера (GORM структура)
+│   │   ├── courier_dto.go       # DTO курьера (запросы и ответы API)
+│   │   ├── delivery.go          # Модель доставки
+│   │   ├── delivery_dto.go      # DTO доставки
+│   │   ├── export.go            # Модель экспорта (история выгрузок)
+│   │   ├── order.go             # Модель заказа
+│   │   ├── order_dto.go         # DTO заказа
+│   │   ├── restaurant.go        # Модель ресторана и меню
+│   │   ├── restaurant_dto.go    # DTO ресторана и меню
+│   │   ├── status.go            # Все статусы (OrderStatus, DeliveryStatus и тд)
+│   │   ├── user.go              # Модель пользователя
+│   │   └── user_dto.go          # DTO пользователя
+│   │
+│   ├── handler/                 # HTTP хендлеры — принимают запросы, отдают ответы
+│   │   ├── auth_handler.go      # Регистрация, логин
+│   │   ├── courier_handler.go   # Управление курьерами
+│   │   ├── delivery_handler.go  # Управление доставками
+│   │   ├── export_handler.go    # Экспорт данных в Excel
+│   │   ├── order_handler.go     # Управление заказами
+│   │   ├── restaurant_handler.go# Управление ресторанами и меню
+│   │   ├── router.go            # Все маршруты и группы (public, protected, admin)
+│   │   ├── user_handler.go      # Управление пользователями
+│   │   └── ws_handler.go        # WebSocket подключение курьеров
+│   │
+│   ├── middleware/              # Промежуточные обработчики запросов
+│   │   ├── auth.go              # Проверка JWT токена
+│   │   ├── lang.go              # Определение языка из заголовка Accept-Language
+│   │   └── role.go              # Проверка роли пользователя (admin, courier)
+│   │
+│   ├── repository/              # Работа с БД через GORM
+│   │   ├── courier_repo.go      # SQL запросы для курьеров
+│   │   ├── delivery_repo.go     # SQL запросы для доставок
+│   │   ├── export_repo.go       # SQL запросы для истории экспортов
+│   │   ├── menu_item_repo.go    # SQL запросы для блюд меню
+│   │   ├── order_repo.go        # SQL запросы для заказов
+│   │   ├── restaurant_repo.go   # SQL запросы для ресторанов
+│   │   └── user_repo.go         # SQL запросы для пользователей
+│   │
+│   ├── service/                 # Бизнес логика проекта
+│   │   ├── auth_service.go      # Регистрация, логин, генерация JWT
+│   │   ├── courier_service.go   # Создание профиля курьера, смена роли
+│   │   ├── delivery_service.go  # Логика доставки, next-status, цена доставки
+│   │   ├── export_service.go    # Генерация Excel файлов в горутинах
+│   │   ├── order_service.go     # Создание заказов, WebSocket уведомления
+│   │   ├── restaurant_service.go# Рестораны, меню, импорт/экспорт Excel
+│   │   └── user_service.go      # Управление пользователями, назначение ролей
+│   │
+│   └── websocket/               # WebSocket для уведомлений в реальном времени
+│       ├── client.go            # Один подключённый курьер (ReadPump, WritePump)
+│       └── hub.go               # Центральный хаб — рассылает сообщения всем курьерам
+│
+├── migrations/                  # SQL миграции для создания таблиц в БД
+│   ├── 001_init.sql             # Основные таблицы (users, orders, couriers и тд)
+│   ├── 002_exports.sql          # Таблица истории экспортов
+│   └── 003_delivery_price.sql   # Добавление цены доставки
+│
+├── pkg/                         # Переиспользуемые утилиты
+│   ├── hasher/
+│   │   └── hasher.go            # Хеширование паролей через bcrypt
+│   ├── jwt/
+│   │   └── jwt.go               # Генерация и парсинг JWT токенов
+│   └── response/
+│       └── response.go          # Единый формат ответов API (Success/Error)
+│
+├── .env                         # Реальные переменные окружения (не в Git)
+├── .env.example                 # Шаблон переменных окружения (в Git)
+├── .gitignore                   # Исключения для Git
+├── go.mod                       # Зависимости проекта
+├── go.sum                       # Контрольные суммы зависимостей
+└── Structure                    # Описание структуры проекта
+
 
 handler → service → repository → domain
 
