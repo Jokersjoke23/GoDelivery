@@ -1976,7 +1976,7 @@ const docTemplate = `{
                 "delivered_at": {
                     "type": "string"
                 },
-                "deliveryPrice": {
+                "delivery_price": {
                     "type": "number"
                 },
                 "id": {
