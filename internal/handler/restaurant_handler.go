@@ -86,12 +86,14 @@ func (h *RestaurantHandler) Create(c *gin.Context) {
 // @Router      /restaurants/{id} [put]
 func (h *RestaurantHandler) Update(c *gin.Context) {
 	id := c.Param("id")
+	ownerID := c.GetString("userID")
+	role := c.GetString("role")
 	var req domain.UpdateRestaurantRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		response.Error(c, http.StatusBadRequest, err.Error())
 		return
 	}
-	restaurant, err := h.restaurantService.Update(id, req)
+	restaurant, err := h.restaurantService.Update(id, ownerID, role, req)
 	if err != nil {
 		response.Error(c, http.StatusBadRequest, err.Error())
 		return

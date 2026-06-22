@@ -15,7 +15,7 @@ type RestaurantService interface {
 	GetByID(id string) (*domain.RestaurantResponse, error)
 	GetAll() ([]domain.RestaurantResponse, error)
 	GetByOwnerID(ownerID string) ([]domain.RestaurantResponse, error)
-	Update(id string, req domain.UpdateRestaurantRequest) (*domain.RestaurantResponse, error)
+	Update(id string, ownerID string, role string, req domain.UpdateRestaurantRequest) (*domain.RestaurantResponse, error)
 	Delete(id string) error
 	AddMenuItem(restaurantID string, req domain.CreateMenuItemRequest) (*domain.MenuItemResponse, error)
 	UpdateMenuItem(id string, req domain.UpdateMenuItemRequest) (*domain.MenuItemResponse, error)
@@ -91,10 +91,14 @@ func (s *restaurantService) GetByOwnerID(ownerID string) ([]domain.RestaurantRes
 	return response, nil
 }
 
-func (s *restaurantService) Update(id string, req domain.UpdateRestaurantRequest) (*domain.RestaurantResponse, error) {
+func (s *restaurantService) Update(id string, ownerID string, role string, req domain.UpdateRestaurantRequest) (*domain.RestaurantResponse, error) {
 	restaurant, err := s.restaurantRepo.GetByID(id)
 	if err != nil {
 		return nil, errors.New("ресторан не найден")
+	}
+
+	if role != "admin" && restaurant.OwnerID != ownerID {
+		return nil, errors.New("нет прав на редактирование этого ресторана")
 	}
 
 	if req.NameRu != nil {
