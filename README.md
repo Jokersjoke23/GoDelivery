@@ -104,7 +104,7 @@ go test ./internal/service/... -v
 | admin | Полный доступ, экспорт/импорт данных |
 
 ## Структура проекта
-
+```
 GoDelivery/
 ├── cmd/
 │   └── server/
@@ -197,3 +197,5 @@ GoDelivery/
 ├── go.mod
 ├── go.sum
 └── README.md
+...
+```
