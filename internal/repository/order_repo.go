@@ -15,6 +15,8 @@ type OrderRepository interface {
 	UpdateStatus(id string, status domain.OrderStatus) error
 	Delete(id string) error
 	GetAll() ([]domain.Order, error)
+	GetAllPaginated(page int, limit int) ([]domain.Order, int, error)
+	GetByUserIDPaginated(userID string, page int, limit int) ([]domain.Order, int, error)
 }
 
 type orderRepository struct {
@@ -81,4 +83,40 @@ func (r *orderRepository) GetAll() ([]domain.Order, error) {
 		return nil, err
 	}
 	return orders, nil
+}
+
+func (r *orderRepository) GetAllPaginated(page int, limit int) ([]domain.Order, int, error) {
+	var orders []domain.Order
+	var total int64
+
+	r.db.Model(&domain.Order{}).Count(&total)
+
+	if err := r.db.
+		Preload("User").
+		Preload("Restaurant").
+		Limit(limit).
+		Offset((page - 1) * limit).
+		Find(&orders).Error; err != nil {
+		return nil, 0, err
+	}
+
+	return orders, int(total), nil
+}
+
+func (r *orderRepository) GetByUserIDPaginated(userID string, page int, limit int) ([]domain.Order, int, error) {
+	var orders []domain.Order
+	var total int64
+
+	r.db.Model(&domain.Order{}).Where("user_id = ?", userID).Count(&total)
+
+	if err := r.db.
+		Where("user_id = ?", userID).
+		Preload("Items").
+		Limit(limit).
+		Offset((page - 1) * limit).
+		Find(&orders).Error; err != nil {
+		return nil, 0, err
+	}
+
+	return orders, int(total), nil
 }

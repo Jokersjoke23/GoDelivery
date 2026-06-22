@@ -19,6 +19,8 @@ type OrderService interface {
 	GetAvailable() ([]domain.OrderResponse, error)
 	UpdateStatus(id string, status domain.OrderStatus) error
 	CancelOrder(id string, userID string) error
+	GetAllPaginated(page int, limit int) ([]domain.OrderResponse, int, error)
+	GetByUserIDPaginated(userID string, page int, limit int) ([]domain.OrderResponse, int, error)
 }
 
 type orderService struct {
@@ -208,4 +210,30 @@ func toOrderResponse(o *domain.Order) *domain.OrderResponse {
 
 func timePtr(t time.Time) *time.Time {
 	return &t
+}
+
+func (s *orderService) GetAllPaginated(page int, limit int) ([]domain.OrderResponse, int, error) {
+	orders, total, err := s.orderRepo.GetAllPaginated(page, limit)
+	if err != nil {
+		return nil, 0, errors.New("ошибка получения заказов")
+	}
+
+	var response []domain.OrderResponse
+	for _, o := range orders {
+		response = append(response, *toOrderResponse(&o))
+	}
+	return response, total, nil
+}
+
+func (s *orderService) GetByUserIDPaginated(userID string, page int, limit int) ([]domain.OrderResponse, int, error) {
+	orders, total, err := s.orderRepo.GetByUserIDPaginated(userID, page, limit)
+	if err != nil {
+		return nil, 0, errors.New("ошибка получения заказов")
+	}
+
+	var response []domain.OrderResponse
+	for _, o := range orders {
+		response = append(response, *toOrderResponse(&o))
+	}
+	return response, total, nil
 }

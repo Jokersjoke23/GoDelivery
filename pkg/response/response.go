@@ -31,3 +31,34 @@ func Error(c *gin.Context, statusCode int, err string) {
 		Error:   err,
 	})
 }
+
+type PaginationMeta struct {
+	Page       int `json:"page"`
+	Limit      int `json:"limit"`
+	Total      int `json:"total"`
+	TotalPages int `json:"total_pages"`
+}
+
+type PaginatedResponse struct {
+	Success    bool           `json:"success"`
+	Data       interface{}    `json:"data"`
+	Pagination PaginationMeta `json:"pagination"`
+}
+
+func Paginated(c *gin.Context, statusCode int, data interface{}, page int, limit int, total int) {
+	totalPages := total / limit
+	if total%limit != 0 {
+		totalPages++
+	}
+
+	c.JSON(statusCode, PaginatedResponse{
+		Success: true,
+		Data:    data,
+		Pagination: PaginationMeta{
+			Page:       page,
+			Limit:      limit,
+			Total:      total,
+			TotalPages: totalPages,
+		},
+	})
+}

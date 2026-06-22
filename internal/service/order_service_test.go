@@ -323,3 +323,37 @@ func TestCancelOrder_WrongUser(t *testing.T) {
 		t.Error("ожидали ошибку — нельзя отменить чужой заказ")
 	}
 }
+
+func (m *mockOrderRepo) GetAllPaginated(page int, limit int) ([]domain.Order, int, error) {
+	var result []domain.Order
+	for _, o := range m.orders {
+		result = append(result, *o)
+	}
+	start := (page - 1) * limit
+	end := start + limit
+	if start > len(result) {
+		return []domain.Order{}, len(result), nil
+	}
+	if end > len(result) {
+		end = len(result)
+	}
+	return result[start:end], len(result), nil
+}
+
+func (m *mockOrderRepo) GetByUserIDPaginated(userID string, page int, limit int) ([]domain.Order, int, error) {
+	var result []domain.Order
+	for _, o := range m.orders {
+		if o.UserID == userID {
+			result = append(result, *o)
+		}
+	}
+	start := (page - 1) * limit
+	end := start + limit
+	if start > len(result) {
+		return []domain.Order{}, len(result), nil
+	}
+	if end > len(result) {
+		end = len(result)
+	}
+	return result[start:end], len(result), nil
+}

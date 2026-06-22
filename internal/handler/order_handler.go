@@ -4,6 +4,7 @@ import (
 	"delivery-app/internal/domain"
 	"delivery-app/internal/service"
 	"delivery-app/pkg/response"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -63,18 +64,36 @@ func (h *OrderHandler) GetByID(c *gin.Context) {
 // @Tags        orders
 // @Produce     json
 // @Security    BearerAuth
-// @Success     200 {object} []domain.Order
+// @Param       page  query int false "Страница" default(1)
+// @Param       limit query int false "Лимит"    default(10)
+// @Success     200 {object} response.PaginatedResponse
 // @Failure     500 {object} response.ErrorResponse
 // @Router      /orders/my [get]
 func (h *OrderHandler) GetMyOrders(c *gin.Context) {
-
 	userID := c.GetString("userID")
-	orders, err := h.orderService.GetByUserID(userID)
+
+	page := 1
+	limit := 10
+
+	if p := c.Query("page"); p != "" {
+		fmt.Sscanf(p, "%d", &page)
+	}
+	if l := c.Query("limit"); l != "" {
+		fmt.Sscanf(l, "%d", &limit)
+	}
+	if page < 1 {
+		page = 1
+	}
+	if limit < 1 || limit > 100 {
+		limit = 10
+	}
+
+	orders, total, err := h.orderService.GetByUserIDPaginated(userID, page, limit)
 	if err != nil {
 		response.Error(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	response.Success(c, http.StatusOK, orders)
+	response.Paginated(c, http.StatusOK, orders, page, limit, total)
 }
 
 // @Summary     Заказы ресторана
@@ -135,4 +154,38 @@ func (h *OrderHandler) Cancel(c *gin.Context) {
 		return
 	}
 	response.Success(c, http.StatusOK, gin.H{"message": "заказ отменён"})
+}
+
+// @Summary     Все заказы (admin)
+// @Tags        orders
+// @Produce     json
+// @Security    BearerAuth
+// @Param       page  query int false "Страница" default(1)
+// @Param       limit query int false "Лимит"    default(10)
+// @Success     200 {object} response.PaginatedResponse
+// @Failure     500 {object} response.ErrorResponse
+// @Router      /admin/orders [get]
+func (h *OrderHandler) GetAll(c *gin.Context) {
+	page := 1
+	limit := 10
+
+	if p := c.Query("page"); p != "" {
+		fmt.Sscanf(p, "%d", &page)
+	}
+	if l := c.Query("limit"); l != "" {
+		fmt.Sscanf(l, "%d", &limit)
+	}
+	if page < 1 {
+		page = 1
+	}
+	if limit < 1 || limit > 100 {
+		limit = 10
+	}
+
+	orders, total, err := h.orderService.GetAllPaginated(page, limit)
+	if err != nil {
+		response.Error(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+	response.Paginated(c, http.StatusOK, orders, page, limit, total)
 }

@@ -100,6 +100,7 @@ func (r *Router) Setup(engine *gin.Engine) {
 			admin.GET("users", r.user.GetAll)
 			admin.DELETE("users/:id", r.user.Delete)
 			admin.PUT("orders/:id/status", r.order.UpdateStatus)
+			admin.GET("orders", r.order.GetAll)
 			admin.GET("couriers/online", r.courier.GetAllOnline)
 			admin.PUT("users/:id/role", r.user.AssignRole)
 			admin.POST("exports", r.export.Create)
