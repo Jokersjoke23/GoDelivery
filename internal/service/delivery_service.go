@@ -1,9 +1,12 @@
 package service
 
 import (
+	"bytes"
 	"delivery-app/internal/domain"
 	"delivery-app/internal/repository"
+	"encoding/json"
 	"errors"
+	"net/http"
 	"time"
 )
 
@@ -75,12 +78,27 @@ func (s *deliveryService) UpdateStatus(id string, status domain.DeliveryStatus) 
 	case domain.DeliveryStatusPickedUp:
 		s.deliveryRepo.UpdatePickedUpAt(id, &now)
 		s.orderRepo.UpdateStatus(delivery.OrderID, domain.OrderStatusPickedUp)
+		order, _ := s.orderRepo.GetByID(delivery.OrderID)
+		if order != nil {
+			s.sendNotification(order.UserID, delivery.OrderID, "order_picked_up", "Курьер забрал ваш заказ")
+		}
+
 	case domain.DeliveryStatusOnTheWay:
 		s.orderRepo.UpdateStatus(delivery.OrderID, domain.OrderStatusOnTheWay)
+		order, _ := s.orderRepo.GetByID(delivery.OrderID)
+		if order != nil {
+			s.sendNotification(order.UserID, delivery.OrderID, "order_on_the_way", "Курьер едет к вам")
+		}
+
 	case domain.DeliveryStatusDelivered:
 		s.deliveryRepo.UpdateDeliveredAt(id, &now)
 		s.orderRepo.UpdateStatus(delivery.OrderID, domain.OrderStatusDelivered)
 		s.courierRepo.UpdateStatus(delivery.CourierID, domain.CourierStatusOnline)
+		order, _ := s.orderRepo.GetByID(delivery.OrderID)
+		if order != nil {
+			s.sendNotification(order.UserID, delivery.OrderID, "order_delivered", "Заказ доставлен!")
+		}
+
 	case domain.DeliveryStatusFailed:
 		s.orderRepo.UpdateStatus(delivery.OrderID, domain.OrderStatusCancelled)
 		s.courierRepo.UpdateStatus(delivery.CourierID, domain.CourierStatusOnline)
@@ -157,4 +175,16 @@ func (s *deliveryService) NextStatus(id string, courierID string) error {
 	}
 
 	return s.UpdateStatus(id, nextStatus)
+}
+
+func (s *deliveryService) sendNotification(userID string, orderID string, notifType string, message string) {
+	payload := map[string]string{
+		"type":     notifType,
+		"user_id":  userID,
+		"order_id": orderID,
+		"message":  message,
+	}
+
+	data, _ := json.Marshal(payload)
+	http.Post("http://localhost:8085/notify", "application/json", bytes.NewBuffer(data))
 }
