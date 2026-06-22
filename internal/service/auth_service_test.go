@@ -71,13 +71,52 @@ func (m *mockUserRepo) UpdateRole(id string, role domain.UserRole) error {
 	return nil
 }
 
+// ===== МОКИ =====
+
+type mockPasswordResetRepo struct {
+	resets map[string]*domain.PasswordReset
+}
+
+func newMockPasswordResetRepo() *mockPasswordResetRepo {
+	return &mockPasswordResetRepo{resets: make(map[string]*domain.PasswordReset)}
+}
+
+func (m *mockPasswordResetRepo) Create(reset *domain.PasswordReset) error {
+	m.resets[reset.Token] = reset
+	return nil
+}
+
+func (m *mockPasswordResetRepo) GetByToken(token string) (*domain.PasswordReset, error) {
+	reset, ok := m.resets[token]
+	if !ok {
+		return nil, errors.New("не найден")
+	}
+	return reset, nil
+}
+
+func (m *mockPasswordResetRepo) DeleteByUserID(userID string) error {
+	for token, r := range m.resets {
+		if r.UserID == userID {
+			delete(m.resets, token)
+		}
+	}
+	return nil
+}
+
+type mockMailer struct{}
+
+func (m *mockMailer) SendResetPassword(to string, token string) error {
+	return nil
+}
+
 // ===== ХЕЛПЕРЫ =====
 
 func newTestAuthService() AuthService {
 	repo := newMockUserRepo()
+	resetRepo := newMockPasswordResetRepo()
 	h := hasher.NewHasher()
 	j := jwt.NewJWT("test-secret", 24*time.Hour)
-	return NewAuthService(repo, h, j)
+	return NewAuthService(repo, resetRepo, h, j, &mockMailer{})
 }
 
 // ===== ТЕСТЫ =====
@@ -198,4 +237,80 @@ func TestLogin_NotFound(t *testing.T) {
 	if err == nil {
 		t.Error("ожидали ошибку — пользователь не существует")
 	}
+}
+
+func TestForgotPassword_Success(t *testing.T) {
+	svc := newTestAuthService()
+
+	// сначала регистрируемся
+	_, err := svc.Register(domain.CreateUserRequest{
+		Name:     "Тест",
+		Email:    "test@mail.com",
+		Phone:    "+77001234567",
+		Password: "password123",
+	})
+	if err != nil {
+		t.Fatalf("регистрация не прошла: %v", err)
+	}
+
+	// запрашиваем сброс пароля
+	err = svc.ForgotPassword("test@mail.com")
+	if err != nil {
+		t.Fatalf("ожидали успех, получили: %v", err)
+	}
+}
+
+func TestForgotPassword_UserNotFound(t *testing.T) {
+	svc := newTestAuthService()
+
+	err := svc.ForgotPassword("notexist@mail.com")
+	if err == nil {
+		t.Error("ожидали ошибку — пользователь не найден")
+	}
+}
+
+func TestResetPassword_Success(t *testing.T) {
+	svc := newTestAuthService()
+
+	// регистрируемся
+	_, err := svc.Register(domain.CreateUserRequest{
+		Name:     "Тест",
+		Email:    "test@mail.com",
+		Phone:    "+77001234567",
+		Password: "oldpassword",
+	})
+	if err != nil {
+		t.Fatalf("регистрация не прошла: %v", err)
+	}
+
+	// запрашиваем сброс
+	err = svc.ForgotPassword("test@mail.com")
+	if err != nil {
+		t.Fatalf("forgot password не прошёл: %v", err)
+	}
+
+	// берём токен из мока
+	resetRepo := newMockPasswordResetRepo()
+	authSvc := svc.(*authService)
+	token := ""
+	for t := range authSvc.passwordResetRepo.(*mockPasswordResetRepo).resets {
+		token = t
+	}
+
+	// сбрасываем пароль
+	err = svc.ResetPassword(token, "newpassword")
+	if err != nil {
+		t.Fatalf("ожидали успешный сброс пароля: %v", err)
+	}
+
+	// проверяем что можем залогиниться с новым паролем
+	_, err = svc.Login(domain.LoginRequest{
+		Email:    "test@mail.com",
+		Password: "newpassword",
+	})
+	if err != nil {
+		t.Fatalf("ожидали успешный логин с новым паролем: %v", err)
+	}
+
+	_ = resetRepo
 }

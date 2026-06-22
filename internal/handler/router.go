@@ -50,6 +50,8 @@ func (r *Router) Setup(engine *gin.Engine) {
 	{
 		authGroup.POST("/register", r.auth.Register)
 		authGroup.POST("/login", r.auth.Login)
+		authGroup.POST("/forgot-password", r.auth.ForgotPassword)
+		authGroup.POST("/reset-password", r.auth.ResetPassword)
 	}
 
 	api.GET("/restaurants", r.restaurant.GetAll)

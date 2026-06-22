@@ -9,6 +9,7 @@ type Config struct {
 	Server   ServerConfig
 	Database DatabaseConfig
 	JWT      JWTConfig
+	SMTP     SMTPConfig
 }
 
 type ServerConfig struct {
@@ -28,6 +29,14 @@ type JWTConfig struct {
 	ExpiresIn time.Duration
 }
 
+type SMTPConfig struct {
+	Host     string
+	Port     int
+	User     string
+	Password string
+	From     string
+}
+
 func Load() *Config {
 	return &Config{
 		Server: ServerConfig{
@@ -43,6 +52,13 @@ func Load() *Config {
 		JWT: JWTConfig{
 			SecretKey: getEnv("JWT_SECRET", "secret"),
 			ExpiresIn: 24 * time.Hour,
+		},
+		SMTP: SMTPConfig{
+			Host:     getEnv("SMTP_HOST", "sandbox.smtp.mailtrap.io"),
+			Port:     2525,
+			User:     getEnv("SMTP_USER", ""),
+			Password: getEnv("SMTP_PASSWORD", ""),
+			From:     getEnv("SMTP_FROM", "noreply@godelivery.com"),
 		},
 	}
 }

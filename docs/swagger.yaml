@@ -250,6 +250,13 @@ definitions:
     - ExportTypeCouriers
     - ExportTypeRestaurants
     - ExportTypeMenu
+  domain.ForgotPasswordRequest:
+    properties:
+      email:
+        type: string
+    required:
+    - email
+    type: object
   domain.ImportResult:
     properties:
       created:
@@ -429,6 +436,17 @@ definitions:
     - PaymentStatusPaid
     - PaymentStatusFailed
     - PaymentStatusRefunded
+  domain.ResetPasswordRequest:
+    properties:
+      password:
+        minLength: 6
+        type: string
+      token:
+        type: string
+    required:
+    - password
+    - token
+    type: object
   domain.Restaurant:
     properties:
       address:
@@ -846,6 +864,31 @@ paths:
       summary: Назначить роль пользователю (admin)
       tags:
       - users
+  /auth/forgot-password:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Email
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/domain.ForgotPasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Запрос сброса пароля
+      tags:
+      - auth
   /auth/login:
     post:
       consumes:
@@ -894,6 +937,31 @@ paths:
           schema:
             $ref: '#/definitions/response.ErrorResponse'
       summary: Регистрация
+      tags:
+      - auth
+  /auth/reset-password:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Токен и новый пароль
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/domain.ResetPasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Сброс пароля
       tags:
       - auth
   /couriers:

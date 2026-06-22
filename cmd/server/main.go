@@ -11,6 +11,7 @@ package main
 
 import (
 	"delivery-app/config"
+	"delivery-app/internal/domain"
 	"delivery-app/internal/handler"
 	"delivery-app/internal/middleware"
 	"delivery-app/internal/repository"
@@ -18,6 +19,7 @@ import (
 	"delivery-app/internal/websocket"
 	"delivery-app/pkg/hasher"
 	"delivery-app/pkg/jwt"
+	"delivery-app/pkg/mailer"
 	"log"
 	"os"
 
@@ -48,11 +50,24 @@ func main() {
 	courierRepo := repository.NewCourierRepository(db)
 	deliveryRepo := repository.NewDeliveryRepository(db)
 	exportRepo := repository.NewExportRepository(db)
+	passwordResetRepo := repository.NewPasswordResetRepository(db)
+
+	if err := db.AutoMigrate(&domain.PasswordReset{}); err != nil {
+		log.Fatalf("ошибка миграции password_resets: %v", err)
+	}
 
 	hub := websocket.NewHub()
 	go hub.Run()
 
-	authSvc := service.NewAuthService(userRepo, passwordHasher, jwtManager)
+	mailClient := mailer.NewMailer(
+		cfg.SMTP.Host,
+		cfg.SMTP.Port,
+		cfg.SMTP.User,
+		cfg.SMTP.Password,
+		cfg.SMTP.From,
+	)
+
+	authSvc := service.NewAuthService(userRepo, passwordResetRepo, passwordHasher, jwtManager, mailClient)
 	userSvc := service.NewUserService(userRepo)
 	restaurantSvc := service.NewRestaurantService(restaurantRepo, menuItemRepo)
 	orderSvc := service.NewOrderService(orderRepo, restaurantRepo, menuItemRepo, courierRepo, deliveryRepo, hub)

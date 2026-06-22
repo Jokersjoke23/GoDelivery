@@ -5,25 +5,40 @@ import (
 	"delivery-app/internal/repository"
 	"delivery-app/pkg/hasher"
 	"delivery-app/pkg/jwt"
+	"delivery-app/pkg/mailer"
 	"errors"
+	"fmt"
+	"time"
 )
 
 type AuthService interface {
 	Register(req domain.CreateUserRequest) (*domain.AuthResponse, error)
 	Login(req domain.LoginRequest) (*domain.AuthResponse, error)
+	ForgotPassword(email string) error
+	ResetPassword(token string, newPassword string) error
 }
 
 type authService struct {
-	userRepo repository.UserRepository
-	hasher   hasher.Hasher
-	jwt      jwt.JWT
+	userRepo          repository.UserRepository
+	passwordResetRepo repository.PasswordResetRepository
+	hasher            hasher.Hasher
+	jwt               jwt.JWT
+	mailer            mailer.Mailer
 }
 
-func NewAuthService(userRepo repository.UserRepository, hasher hasher.Hasher, jwt jwt.JWT) AuthService {
+func NewAuthService(
+	userRepo repository.UserRepository,
+	passwordResetRepo repository.PasswordResetRepository,
+	hasher hasher.Hasher,
+	jwt jwt.JWT,
+	mailer mailer.Mailer,
+) AuthService {
 	return &authService{
-		userRepo: userRepo,
-		hasher:   hasher,
-		jwt:      jwt,
+		userRepo:          userRepo,
+		passwordResetRepo: passwordResetRepo,
+		hasher:            hasher,
+		jwt:               jwt,
+		mailer:            mailer,
 	}
 }
 
@@ -98,4 +113,51 @@ func (s *authService) Login(req domain.LoginRequest) (*domain.AuthResponse, erro
 			IsActive: user.IsActive,
 		},
 	}, nil
+}
+
+func (s *authService) ForgotPassword(email string) error {
+	user, err := s.userRepo.GetByEmail(email)
+	if err != nil {
+		return errors.New("пользователь не найден")
+	}
+
+	s.passwordResetRepo.DeleteByUserID(user.ID)
+
+	token := fmt.Sprintf("%d", time.Now().UnixNano())
+
+	reset := &domain.PasswordReset{
+		UserID:    user.ID,
+		Token:     token,
+		ExpiresAt: time.Now().Add(1 * time.Hour),
+	}
+
+	if err := s.passwordResetRepo.Create(reset); err != nil {
+		return errors.New("ошибка создания токена")
+	}
+
+	return s.mailer.SendResetPassword(email, token)
+}
+
+func (s *authService) ResetPassword(token string, newPassword string) error {
+	reset, err := s.passwordResetRepo.GetByToken(token)
+	if err != nil {
+		return errors.New("токен недействителен или истёк")
+	}
+
+	hashed, err := s.hasher.Hash(newPassword)
+	if err != nil {
+		return errors.New("ошибка хеширования пароля")
+	}
+
+	user, err := s.userRepo.GetByID(reset.UserID)
+	if err != nil {
+		return errors.New("пользователь не найден")
+	}
+
+	user.Password = hashed
+	if err := s.userRepo.Update(user); err != nil {
+		return errors.New("ошибка обновления пароля")
+	}
+
+	return s.passwordResetRepo.DeleteByUserID(reset.UserID)
 }
