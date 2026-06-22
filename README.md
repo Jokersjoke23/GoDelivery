@@ -197,5 +197,4 @@ GoDelivery/
 ├── go.mod
 ├── go.sum
 └── README.md
-...
 ```
