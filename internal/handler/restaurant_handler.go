@@ -294,3 +294,49 @@ func (h *RestaurantHandler) ImportMenuFromExcel(c *gin.Context) {
 
 	response.Success(c, http.StatusOK, result)
 }
+
+// @Summary     Поиск ресторанов
+// @Tags        restaurants
+// @Produce     json
+// @Param       q query string true "Поисковый запрос"
+// @Success     200 {object} []domain.RestaurantResponse
+// @Failure     400 {object} response.ErrorResponse
+// @Router      /restaurants/search [get]
+func (h *RestaurantHandler) Search(c *gin.Context) {
+	query := c.Query("q")
+	if query == "" {
+		response.Error(c, http.StatusBadRequest, "укажите поисковый запрос")
+		return
+	}
+
+	restaurants, err := h.restaurantService.Search(query)
+	if err != nil {
+		response.Error(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	response.Success(c, http.StatusOK, restaurants)
+}
+
+// @Summary     Поиск блюд
+// @Tags        restaurants
+// @Produce     json
+// @Param       q query string true "Поисковый запрос"
+// @Success     200 {object} []domain.MenuItemResponse
+// @Failure     400 {object} response.ErrorResponse
+// @Router      /restaurants/menu/search [get]
+func (h *RestaurantHandler) SearchMenu(c *gin.Context) {
+	query := c.Query("q")
+	if query == "" {
+		response.Error(c, http.StatusBadRequest, "укажите поисковый запрос")
+		return
+	}
+
+	items, err := h.restaurantService.SearchMenu(query)
+	if err != nil {
+		response.Error(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	response.Success(c, http.StatusOK, items)
+}

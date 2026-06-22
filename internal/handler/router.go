@@ -55,7 +55,9 @@ func (r *Router) Setup(engine *gin.Engine) {
 	}
 
 	api.GET("/restaurants", r.restaurant.GetAll)
+	api.GET("/restaurants/search", r.restaurant.Search)
 	api.GET("/restaurants/:id", r.restaurant.GetByID)
+	api.GET("/restaurants/menu/search", r.restaurant.SearchMenu)
 	api.GET("/restaurants/:id/menu", r.restaurant.GetMenu)
 	api.GET("/restaurants/menu/:itemID", r.restaurant.GetMenuItem)
 

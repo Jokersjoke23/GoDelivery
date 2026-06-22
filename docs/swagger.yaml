@@ -474,6 +474,23 @@ definitions:
       updated_at:
         type: string
     type: object
+  domain.RestaurantResponse:
+    properties:
+      address:
+        type: string
+      id:
+        type: string
+      name_en:
+        type: string
+      name_ru:
+        type: string
+      owner_id:
+        type: string
+      phone:
+        type: string
+      status:
+        $ref: '#/definitions/domain.RestaurantStatus'
+    type: object
   domain.RestaurantStatus:
     enum:
     - active
@@ -574,6 +591,25 @@ definitions:
         type: string
       success:
         type: boolean
+    type: object
+  response.PaginatedResponse:
+    properties:
+      data: {}
+      pagination:
+        $ref: '#/definitions/response.PaginationMeta'
+      success:
+        type: boolean
+    type: object
+  response.PaginationMeta:
+    properties:
+      limit:
+        type: integer
+      page:
+        type: integer
+      total:
+        type: integer
+      total_pages:
+        type: integer
     type: object
   response.SuccessResponse:
     properties:
@@ -700,6 +736,35 @@ paths:
       summary: Скачать файл экспорта
       tags:
       - exports
+  /admin/orders:
+    get:
+      parameters:
+      - default: 1
+        description: Страница
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Лимит
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.PaginatedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Все заказы (admin)
+      tags:
+      - orders
   /admin/orders/{id}/status:
     put:
       consumes:
@@ -1341,15 +1406,24 @@ paths:
       - deliveries
   /orders/my:
     get:
+      parameters:
+      - default: 1
+        description: Страница
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Лимит
+        in: query
+        name: limit
+        type: integer
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/domain.Order'
-            type: array
+            $ref: '#/definitions/response.PaginatedResponse'
         "500":
           description: Internal Server Error
           schema:
@@ -1638,6 +1712,54 @@ paths:
       security:
       - BearerAuth: []
       summary: Обновить блюдо
+      tags:
+      - restaurants
+  /restaurants/menu/search:
+    get:
+      parameters:
+      - description: Поисковый запрос
+        in: query
+        name: q
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/domain.MenuItemResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Поиск блюд
+      tags:
+      - restaurants
+  /restaurants/search:
+    get:
+      parameters:
+      - description: Поисковый запрос
+        in: query
+        name: q
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/domain.RestaurantResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Поиск ресторанов
       tags:
       - restaurants
   /users/me:

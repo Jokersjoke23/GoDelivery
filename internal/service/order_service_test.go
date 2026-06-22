@@ -357,3 +357,10 @@ func (m *mockOrderRepo) GetByUserIDPaginated(userID string, page int, limit int)
 	}
 	return result[start:end], len(result), nil
 }
+
+func (m *mockRestaurantRepo) Search(query string) ([]domain.Restaurant, error) {
+	return nil, nil
+}
+func (m *mockMenuItemRepo) Search(query string) ([]domain.MenuItem, error) {
+	return nil, nil
+}

@@ -12,6 +12,7 @@ type MenuItemRepository interface {
 	GetByRestaurantID(restaurantID string) ([]domain.MenuItem, error)
 	Update(item *domain.MenuItem) error
 	Delete(id string) error
+	Search(query string) ([]domain.MenuItem, error)
 }
 
 type menuItemRepository struct {
@@ -48,4 +49,14 @@ func (r *menuItemRepository) Update(item *domain.MenuItem) error {
 
 func (r *menuItemRepository) Delete(id string) error {
 	return r.db.Delete(&domain.MenuItem{}, "id = ?", id).Error
+}
+
+func (r *menuItemRepository) Search(query string) ([]domain.MenuItem, error) {
+	var items []domain.MenuItem
+	search := "%" + query + "%"
+	if err := r.db.Where("name_ru ILIKE ? OR name_en ILIKE ?", search, search).
+		Find(&items).Error; err != nil {
+		return nil, err
+	}
+	return items, nil
 }

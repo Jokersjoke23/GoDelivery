@@ -13,6 +13,7 @@ type RestaurantRepository interface {
 	GetByOwnerID(ownerID string) ([]domain.Restaurant, error)
 	Update(restaurant *domain.Restaurant) error
 	Delete(id string) error
+	Search(query string) ([]domain.Restaurant, error)
 }
 
 type restaurantRepository struct {
@@ -57,4 +58,14 @@ func (r *restaurantRepository) Update(restaurant *domain.Restaurant) error {
 
 func (r *restaurantRepository) Delete(id string) error {
 	return r.db.Delete(&domain.Restaurant{}, "id = ?", id).Error
+}
+
+func (r *restaurantRepository) Search(query string) ([]domain.Restaurant, error) {
+	var restaurants []domain.Restaurant
+	search := "%" + query + "%"
+	if err := r.db.Where("name_ru ILIKE ? OR name_en ILIKE ?", search, search).
+		Find(&restaurants).Error; err != nil {
+		return nil, err
+	}
+	return restaurants, nil
 }

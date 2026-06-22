@@ -24,6 +24,8 @@ type RestaurantService interface {
 	GetMenuItem(id string) (*domain.MenuItemResponse, error)
 	ImportFromExcel(ownerID string, filePath string) (*domain.ImportResult, error)
 	ImportMenuFromExcel(filePath string) (*domain.ImportResult, error)
+	Search(query string) ([]domain.RestaurantResponse, error)
+	SearchMenu(query string) ([]domain.MenuItemResponse, error)
 }
 
 type restaurantService struct {
@@ -325,4 +327,30 @@ func (s *restaurantService) ImportMenuFromExcel(filePath string) (*domain.Import
 	}
 
 	return result, nil
+}
+
+func (s *restaurantService) Search(query string) ([]domain.RestaurantResponse, error) {
+	restaurants, err := s.restaurantRepo.Search(query)
+	if err != nil {
+		return nil, errors.New("ошибка поиска")
+	}
+
+	var response []domain.RestaurantResponse
+	for _, r := range restaurants {
+		response = append(response, *toRestaurantResponse(&r))
+	}
+	return response, nil
+}
+
+func (s *restaurantService) SearchMenu(query string) ([]domain.MenuItemResponse, error) {
+	items, err := s.menuItemRepo.Search(query)
+	if err != nil {
+		return nil, errors.New("ошибка поиска")
+	}
+
+	var response []domain.MenuItemResponse
+	for _, item := range items {
+		response = append(response, *toMenuItemResponse(&item))
+	}
+	return response, nil
 }
