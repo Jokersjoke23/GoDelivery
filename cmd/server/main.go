@@ -24,11 +24,16 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
 func main() {
+	if err := godotenv.Load(); err != nil {
+		log.Println("файл .env не найден")
+	}
+
 	cfg := config.Load()
 
 	db, err := gorm.Open(postgres.Open(cfg.Database.DSN()), &gorm.Config{})
