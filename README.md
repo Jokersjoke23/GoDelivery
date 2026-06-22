@@ -106,22 +106,94 @@ go test ./internal/service/... -v
 ## Структура проекта
 
 GoDelivery/
-
-├── cmd/server/          # Точка входа
-├── config/              # Конфигурация
+├── cmd/
+│   └── server/
+│       └── main.go
+├── config/
+│   └── config.go
 ├── internal/
-│   ├── domain/          # Модели и DTO
-│   ├── handler/         # HTTP хендлеры
-│   ├── middleware/       # Auth, Role, Lang middleware
-│   ├── repository/      # Работа с БД
-│   ├── service/         # Бизнес логика
-│   └── websocket/       # WebSocket для курьеров
-├── migrations/          # SQL миграции
-├── notification-service/ # Микросервис уведомлений
+│   ├── domain/
+│   │   ├── courier.go
+│   │   ├── courier_dto.go
+│   │   ├── delivery.go
+│   │   ├── delivery_dto.go
+│   │   ├── export.go
+│   │   ├── order.go
+│   │   ├── order_dto.go
+│   │   ├── password_reset.go
+│   │   ├── restaurant.go
+│   │   ├── restaurant_dto.go
+│   │   ├── status.go
+│   │   ├── user.go
+│   │   └── user_dto.go
+│   ├── handler/
+│   │   ├── auth_handler.go
+│   │   ├── courier_handler.go
+│   │   ├── delivery_handler.go
+│   │   ├── export_handler.go
+│   │   ├── order_handler.go
+│   │   ├── restaurant_handler.go
+│   │   ├── router.go
+│   │   ├── user_handler.go
+│   │   └── ws_handler.go
+│   ├── middleware/
+│   │   ├── auth.go
+│   │   ├── lang.go
+│   │   └── role.go
+│   ├── repository/
+│   │   ├── courier_repo.go
+│   │   ├── delivery_repo.go
+│   │   ├── export_repo.go
+│   │   ├── menu_item_repo.go
+│   │   ├── order_repo.go
+│   │   ├── password_reset_repo.go
+│   │   ├── restaurant_repo.go
+│   │   └── user_repo.go
+│   ├── service/
+│   │   ├── auth_service.go
+│   │   ├── auth_service_test.go
+│   │   ├── courier_service.go
+│   │   ├── courier_service_test.go
+│   │   ├── delivery_service.go
+│   │   ├── errors_test.go
+│   │   ├── export_service.go
+│   │   ├── order_service.go
+│   │   ├── order_service_test.go
+│   │   └── restaurant_service.go
+│   └── websocket/
+│       ├── client.go
+│       └── hub.go
+├── migrations/
+│   ├── 001_init.sql
+│   ├── 002_exports.sql
+│   ├── 003_delivery_price.sql
+│   └── 004_password_resets.sql
+├── notification-service/
+│   ├── cmd/
+│   │   └── main.go
+│   ├── domain/
+│   │   └── notification.go
+│   ├── handler/
+│   │   └── handler.go
+│   └── hub/
+│       ├── client.go
+│       └── hub.go
 ├── pkg/
-│   ├── hasher/          # Хеширование паролей
-│   ├── jwt/             # JWT токены
-│   ├── mailer/          # Отправка email
-│   └── response/        # Формат ответов API
+│   ├── hasher/
+│   │   └── hasher.go
+│   ├── jwt/
+│   │   └── jwt.go
+│   ├── mailer/
+│   │   └── mailer.go
+│   └── response/
+│       └── response.go
+├── docs/
+├── exports/
+├── imports/
+├── .env.example
+├── .gitignore
 ├── Dockerfile
-└── docker-compose.yml
+├── docker-compose.yml
+├── go.mod
+├── go.sum
+└── README.md
