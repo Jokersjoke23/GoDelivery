@@ -33,7 +33,7 @@ func (r *orderRepository) Create(order *domain.Order) error {
 
 func (r *orderRepository) GetByID(id string) (*domain.Order, error) {
 	var order domain.Order
-	if err := r.db.Preload("Items").Preload("Items.MenuItem").First(&order, "id = ?", id).Error; err != nil {
+	if err := r.db.Preload("Items").Preload("Items.MenuItem").Preload("Delivery").First(&order, "id = ?", id).Error; err != nil {
 		return nil, err
 	}
 	return &order, nil
@@ -41,7 +41,7 @@ func (r *orderRepository) GetByID(id string) (*domain.Order, error) {
 
 func (r *orderRepository) GetByUserID(userID string) ([]domain.Order, error) {
 	var orders []domain.Order
-	if err := r.db.Where("user_id = ?", userID).Preload("Items").Find(&orders).Error; err != nil {
+	if err := r.db.Where("user_id = ?", userID).Preload("Items").Preload("Delivery").Find(&orders).Error; err != nil {
 		return nil, err
 	}
 	return orders, nil
@@ -112,6 +112,7 @@ func (r *orderRepository) GetByUserIDPaginated(userID string, page int, limit in
 	if err := r.db.
 		Where("user_id = ?", userID).
 		Preload("Items").
+		Preload("Delivery").
 		Limit(limit).
 		Offset((page - 1) * limit).
 		Find(&orders).Error; err != nil {

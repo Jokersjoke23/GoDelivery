@@ -28,6 +28,9 @@ type OrderResponse struct {
 	UserID        string              `json:"user_id"`
 	RestaurantID  string              `json:"restaurant_id"`
 	TotalPrice    float64             `json:"total_price"`
+	DeliveryPrice float64             `json:"delivery_price"`
+	GrandTotal    float64             `json:"grand_total"`
+	PriceSummary  string              `json:"price_summary"`
 	Status        OrderStatus         `json:"status"`
 	Address       string              `json:"address"`
 	PaymentMethod PaymentMethod       `json:"payment_method"`

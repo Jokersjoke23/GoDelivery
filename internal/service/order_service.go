@@ -6,6 +6,7 @@ import (
 	ws "delivery-app/internal/websocket"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -195,11 +196,27 @@ func toOrderResponse(o *domain.Order) *domain.OrderResponse {
 		})
 	}
 
+	deliveryPrice := 0.0
+	if o.Delivery != nil {
+		deliveryPrice = o.Delivery.DeliveryPrice
+	}
+
+	grandTotal := o.TotalPrice + deliveryPrice
+
+	priceSummary := ""
+	if deliveryPrice > 0 {
+		priceSummary = fmt.Sprintf("Ваш заказ %.0f₸ + доставка %.0f₸, итого %.0f₸",
+			o.TotalPrice, deliveryPrice, grandTotal)
+	}
+
 	return &domain.OrderResponse{
 		ID:            o.ID,
 		UserID:        o.UserID,
 		RestaurantID:  o.RestaurantID,
 		TotalPrice:    o.TotalPrice,
+		DeliveryPrice: deliveryPrice,
+		GrandTotal:    grandTotal,
+		PriceSummary:  priceSummary,
 		Status:        o.Status,
 		Address:       o.Address,
 		PaymentMethod: o.PaymentMethod,

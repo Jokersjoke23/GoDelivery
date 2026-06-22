@@ -21,6 +21,7 @@ type Order struct {
 	UpdatedAt     time.Time      `gorm:"autoUpdateTime" json:"updated_at"`
 	DeletedAt     gorm.DeletedAt `gorm:"index" json:"-"`
 	Items         []OrderItem    `gorm:"foreignKey:OrderID" json:"items,omitempty"`
+	Delivery      *Delivery      `gorm:"foreignKey:OrderID" json:"delivery,omitempty"`
 }
 
 func (Order) TableName() string {
