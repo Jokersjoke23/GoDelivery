@@ -1,4 +1,7 @@
 {
+    "schemes": [
+        "https"
+    ],
     "swagger": "2.0",
     "info": {
         "description": "REST API для сервиса доставки еды",
@@ -6,7 +9,7 @@
         "contact": {},
         "version": "1.0"
     },
-    "host": "localhost:8080",
+    "host": "godelivery-z3dw.onrender.com",
     "basePath": "/api",
     "paths": {
         "/admin/couriers/online": {
@@ -2363,6 +2366,9 @@
                 "created_at": {
                     "type": "string"
                 },
+                "delivery": {
+                    "$ref": "#/definitions/domain.Delivery"
+                },
                 "id": {
                     "type": "string"
                 },
@@ -2453,6 +2459,12 @@
                 "address": {
                     "type": "string"
                 },
+                "delivery_price": {
+                    "type": "number"
+                },
+                "grand_total": {
+                    "type": "number"
+                },
                 "id": {
                     "type": "string"
                 },
@@ -2467,6 +2479,9 @@
                 },
                 "payment_status": {
                     "$ref": "#/definitions/domain.PaymentStatus"
+                },
+                "price_summary": {
+                    "type": "string"
                 },
                 "restaurant_id": {
                     "type": "string"

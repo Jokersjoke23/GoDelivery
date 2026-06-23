@@ -2369,6 +2369,9 @@ const docTemplate = `{
                 "created_at": {
                     "type": "string"
                 },
+                "delivery": {
+                    "$ref": "#/definitions/domain.Delivery"
+                },
                 "id": {
                     "type": "string"
                 },
@@ -2459,6 +2462,12 @@ const docTemplate = `{
                 "address": {
                     "type": "string"
                 },
+                "delivery_price": {
+                    "type": "number"
+                },
+                "grand_total": {
+                    "type": "number"
+                },
                 "id": {
                     "type": "string"
                 },
@@ -2473,6 +2482,9 @@ const docTemplate = `{
                 },
                 "payment_status": {
                     "$ref": "#/definitions/domain.PaymentStatus"
+                },
+                "price_summary": {
+                    "type": "string"
                 },
                 "restaurant_id": {
                     "type": "string"
@@ -2826,9 +2838,9 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "localhost:8080",
+	Host:             "godelivery-z3dw.onrender.com",
 	BasePath:         "/api",
-	Schemes:          []string{},
+	Schemes:          []string{"https"},
 	Title:            "GoDelivery API",
 	Description:      "REST API для сервиса доставки еды",
 	InfoInstanceName: "swagger",

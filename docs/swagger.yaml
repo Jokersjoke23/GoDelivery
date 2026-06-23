@@ -314,6 +314,8 @@ definitions:
         type: string
       created_at:
         type: string
+      delivery:
+        $ref: '#/definitions/domain.Delivery'
       id:
         type: string
       items:
@@ -373,6 +375,10 @@ definitions:
     properties:
       address:
         type: string
+      delivery_price:
+        type: number
+      grand_total:
+        type: number
       id:
         type: string
       items:
@@ -383,6 +389,8 @@ definitions:
         $ref: '#/definitions/domain.PaymentMethod'
       payment_status:
         $ref: '#/definitions/domain.PaymentStatus'
+      price_summary:
+        type: string
       restaurant_id:
         type: string
       status:
@@ -617,7 +625,7 @@ definitions:
       success:
         type: boolean
     type: object
-host: localhost:8080
+host: godelivery-z3dw.onrender.com
 info:
   contact: {}
   description: REST API для сервиса доставки еды
@@ -1806,6 +1814,8 @@ paths:
       summary: Обновить профиль
       tags:
       - users
+schemes:
+- https
 securityDefinitions:
   BearerAuth:
     in: header
