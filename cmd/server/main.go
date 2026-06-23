@@ -57,6 +57,8 @@ func main() {
 	exportRepo := repository.NewExportRepository(db)
 	passwordResetRepo := repository.NewPasswordResetRepository(db)
 
+	db.Exec("CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";")
+
 	if err := db.AutoMigrate(&domain.PasswordReset{}); err != nil {
 		log.Fatalf("ошибка миграции password_resets: %v", err)
 	}
