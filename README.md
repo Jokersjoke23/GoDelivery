@@ -2,6 +2,14 @@
 
 REST API для сервиса доставки еды, написанный на Go.
 
+## Live Demo
+
+API доступен по адресу: https://godelivery-z3dw.onrender.com
+
+Swagger документация: https://godelivery-z3dw.onrender.com/swagger/index.html
+
+> Первый запрос может занять 30-60 секунд — сервер просыпается после неактивности.
+
 ## Технологии
 
 - **Go** + **Gin** — веб-фреймворк
