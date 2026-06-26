@@ -9,8 +9,6 @@ import (
 	"time"
 )
 
-// ===== МОКИ =====
-
 type mockUserRepo struct {
 	users map[string]*domain.User
 }
@@ -71,8 +69,6 @@ func (m *mockUserRepo) UpdateRole(id string, role domain.UserRole) error {
 	return nil
 }
 
-// ===== МОКИ =====
-
 type mockPasswordResetRepo struct {
 	resets map[string]*domain.PasswordReset
 }
@@ -109,8 +105,6 @@ func (m *mockMailer) SendResetPassword(to string, token string) error {
 	return nil
 }
 
-// ===== ХЕЛПЕРЫ =====
-
 func newTestAuthService() AuthService {
 	repo := newMockUserRepo()
 	resetRepo := newMockPasswordResetRepo()
@@ -118,8 +112,6 @@ func newTestAuthService() AuthService {
 	j := jwt.NewJWT("test-secret", 24*time.Hour)
 	return NewAuthService(repo, resetRepo, h, j, &mockMailer{})
 }
-
-// ===== ТЕСТЫ =====
 
 func TestRegister_Success(t *testing.T) {
 	svc := newTestAuthService()
@@ -157,13 +149,11 @@ func TestRegister_DuplicateEmail(t *testing.T) {
 		Password: "password123",
 	}
 
-	// первая регистрация
 	_, err := svc.Register(req)
 	if err != nil {
 		t.Fatalf("первая регистрация должна пройти успешно: %v", err)
 	}
 
-	// вторая регистрация с тем же email
 	_, err = svc.Register(req)
 	if err == nil {
 		t.Error("ожидали ошибку при дублировании email")
@@ -173,7 +163,6 @@ func TestRegister_DuplicateEmail(t *testing.T) {
 func TestLogin_Success(t *testing.T) {
 	svc := newTestAuthService()
 
-	// сначала регистрируемся
 	registerReq := domain.CreateUserRequest{
 		Name:     "Тест",
 		Email:    "test@mail.com",
@@ -185,7 +174,6 @@ func TestLogin_Success(t *testing.T) {
 		t.Fatalf("регистрация не прошла: %v", err)
 	}
 
-	// теперь логинимся
 	loginReq := domain.LoginRequest{
 		Email:    "test@mail.com",
 		Password: "password123",
@@ -204,7 +192,6 @@ func TestLogin_Success(t *testing.T) {
 func TestLogin_WrongPassword(t *testing.T) {
 	svc := newTestAuthService()
 
-	// регистрируемся
 	_, err := svc.Register(domain.CreateUserRequest{
 		Name:     "Тест",
 		Email:    "test@mail.com",
@@ -215,7 +202,6 @@ func TestLogin_WrongPassword(t *testing.T) {
 		t.Fatalf("регистрация не прошла: %v", err)
 	}
 
-	// логинимся с неверным паролем
 	_, err = svc.Login(domain.LoginRequest{
 		Email:    "test@mail.com",
 		Password: "wrongpassword",
@@ -242,7 +228,6 @@ func TestLogin_NotFound(t *testing.T) {
 func TestForgotPassword_Success(t *testing.T) {
 	svc := newTestAuthService()
 
-	// сначала регистрируемся
 	_, err := svc.Register(domain.CreateUserRequest{
 		Name:     "Тест",
 		Email:    "test@mail.com",
@@ -253,7 +238,6 @@ func TestForgotPassword_Success(t *testing.T) {
 		t.Fatalf("регистрация не прошла: %v", err)
 	}
 
-	// запрашиваем сброс пароля
 	err = svc.ForgotPassword("test@mail.com")
 	if err != nil {
 		t.Fatalf("ожидали успех, получили: %v", err)
@@ -272,7 +256,6 @@ func TestForgotPassword_UserNotFound(t *testing.T) {
 func TestResetPassword_Success(t *testing.T) {
 	svc := newTestAuthService()
 
-	// регистрируемся
 	_, err := svc.Register(domain.CreateUserRequest{
 		Name:     "Тест",
 		Email:    "test@mail.com",
@@ -283,13 +266,11 @@ func TestResetPassword_Success(t *testing.T) {
 		t.Fatalf("регистрация не прошла: %v", err)
 	}
 
-	// запрашиваем сброс
 	err = svc.ForgotPassword("test@mail.com")
 	if err != nil {
 		t.Fatalf("forgot password не прошёл: %v", err)
 	}
 
-	// берём токен из мока
 	resetRepo := newMockPasswordResetRepo()
 	authSvc := svc.(*authService)
 	token := ""
@@ -297,13 +278,11 @@ func TestResetPassword_Success(t *testing.T) {
 		token = t
 	}
 
-	// сбрасываем пароль
 	err = svc.ResetPassword(token, "newpassword")
 	if err != nil {
 		t.Fatalf("ожидали успешный сброс пароля: %v", err)
 	}
 
-	// проверяем что можем залогиниться с новым паролем
 	_, err = svc.Login(domain.LoginRequest{
 		Email:    "test@mail.com",
 		Password: "newpassword",
