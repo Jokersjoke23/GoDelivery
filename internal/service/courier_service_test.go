@@ -8,8 +8,6 @@ import (
 	"gorm.io/gorm"
 )
 
-// ===== МОКИ =====
-
 type mockCourierRepo struct {
 	couriers map[string]*domain.Courier
 }
@@ -87,8 +85,6 @@ func (m *mockCourierRepo) Delete(id string) error {
 	return nil
 }
 
-// ---
-
 type mockUserRepoForCourier struct {
 	users map[string]*domain.User
 }
@@ -132,16 +128,12 @@ func (m *mockUserRepoForCourier) UpdateRole(id string, role domain.UserRole) err
 	return nil
 }
 
-// ===== ХЕЛПЕР =====
-
 func newTestCourierService() CourierService {
 	return NewCourierService(
 		newMockCourierRepo(),
 		newMockUserRepoForCourier(),
 	)
 }
-
-// ===== ТЕСТЫ =====
 
 func TestCreateCourier_Success(t *testing.T) {
 	svc := newTestCourierService()
@@ -172,13 +164,11 @@ func TestCreateCourier_AdminCannotBeCourier(t *testing.T) {
 func TestCreateCourier_AlreadyExists(t *testing.T) {
 	svc := newTestCourierService()
 
-	// создаём курьера первый раз
 	_, err := svc.Create("user-1")
 	if err != nil {
 		t.Fatalf("первое создание должно пройти: %v", err)
 	}
 
-	// пытаемся создать снова
 	_, err = svc.Create("user-1")
 	if err == nil {
 		t.Error("ожидали ошибку — профиль уже существует")
@@ -198,13 +188,11 @@ func TestCreateCourier_UserNotFound(t *testing.T) {
 func TestDeleteProfile_Success(t *testing.T) {
 	svc := newTestCourierService()
 
-	// создаём курьера
 	_, err := svc.Create("user-1")
 	if err != nil {
 		t.Fatalf("создание не прошло: %v", err)
 	}
 
-	// удаляем профиль
 	err = svc.DeleteProfile("user-1")
 	if err != nil {
 		t.Fatalf("ожидали успешное удаление, получили: %v", err)
