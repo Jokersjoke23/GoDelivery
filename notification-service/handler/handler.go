@@ -24,7 +24,6 @@ func NewHandler(hub *hub.Hub) *Handler {
 	return &Handler{hub: hub}
 }
 
-// ConnectUser — пользователь подключается по WebSocket
 func (h *Handler) ConnectUser(c *gin.Context) {
 	userID := c.Query("user_id")
 	if userID == "" {
@@ -44,7 +43,6 @@ func (h *Handler) ConnectUser(c *gin.Context) {
 	go client.ReadPump()
 }
 
-// Notify — основной сервис отправляет уведомление
 func (h *Handler) Notify(c *gin.Context) {
 	var n domain.Notification
 	if err := c.ShouldBindJSON(&n); err != nil {
