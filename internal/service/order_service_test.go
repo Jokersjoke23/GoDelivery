@@ -6,8 +6,6 @@ import (
 	"time"
 )
 
-// ===== МОКИ =====
-
 type mockOrderRepo struct {
 	orders map[string]*domain.Order
 }
@@ -80,8 +78,6 @@ func (m *mockOrderRepo) GetAll() ([]domain.Order, error) {
 	return result, nil
 }
 
-// ---
-
 type mockRestaurantRepo struct {
 	restaurants map[string]*domain.Restaurant
 }
@@ -110,8 +106,6 @@ func (m *mockRestaurantRepo) GetByOwnerID(id string) ([]domain.Restaurant, error
 }
 func (m *mockRestaurantRepo) Update(r *domain.Restaurant) error { return nil }
 func (m *mockRestaurantRepo) Delete(id string) error            { return nil }
-
-// ---
 
 type mockMenuItemRepo struct {
 	items map[string]*domain.MenuItem
@@ -151,8 +145,6 @@ func (m *mockMenuItemRepo) GetByRestaurantID(restaurantID string) ([]domain.Menu
 	return nil, nil
 }
 
-// ---
-
 type mockCourierRepoOrder struct{}
 
 func (m *mockCourierRepoOrder) Create(c *domain.Courier) error                 { return nil }
@@ -167,8 +159,6 @@ func (m *mockCourierRepoOrder) UpdateLocation(id string, lat float64, lng float6
 	return nil
 }
 func (m *mockCourierRepoOrder) Delete(id string) error { return nil }
-
-// ---
 
 type mockDeliveryRepoOrder struct{}
 
@@ -186,8 +176,6 @@ func (m *mockDeliveryRepoOrder) UpdateStatus(id string, status domain.DeliverySt
 func (m *mockDeliveryRepoOrder) UpdatePickedUpAt(id string, t *time.Time) error  { return nil }
 func (m *mockDeliveryRepoOrder) UpdateDeliveredAt(id string, t *time.Time) error { return nil }
 
-// ===== ХЕЛПЕР =====
-
 func newTestOrderService() OrderService {
 	return NewOrderService(
 		newMockOrderRepo(),
@@ -195,11 +183,9 @@ func newTestOrderService() OrderService {
 		newMockMenuItemRepo(),
 		&mockCourierRepoOrder{},
 		&mockDeliveryRepoOrder{},
-		nil, // hub не нужен в тестах
+		nil,
 	)
 }
-
-// ===== ТЕСТЫ =====
 
 func TestCreateOrder_Success(t *testing.T) {
 	svc := newTestOrderService()
@@ -209,8 +195,8 @@ func TestCreateOrder_Success(t *testing.T) {
 		Address:       "ул. Абая 10",
 		PaymentMethod: domain.PaymentMethodCash,
 		Items: []domain.CreateOrderItemRequest{
-			{MenuItemID: "item-1", Quantity: 2}, // 1200 * 2 = 2400
-			{MenuItemID: "item-2", Quantity: 1}, // 1500 * 1 = 1500
+			{MenuItemID: "item-1", Quantity: 2},
+			{MenuItemID: "item-2", Quantity: 1},
 		},
 	}
 
@@ -252,7 +238,6 @@ func TestCreateOrder_RestaurantNotFound(t *testing.T) {
 func TestCreateOrder_MenuItemNotAvailable(t *testing.T) {
 	svc := newTestOrderService()
 
-	// делаем блюдо недоступным
 	menuRepo := newMockMenuItemRepo()
 	menuRepo.items["item-1"].IsAvailable = false
 
@@ -284,7 +269,6 @@ func TestCreateOrder_MenuItemNotAvailable(t *testing.T) {
 func TestCancelOrder_Success(t *testing.T) {
 	svc := newTestOrderService()
 
-	// создаём заказ
 	req := domain.CreateOrderRequest{
 		RestaurantID:  "rest-1",
 		Address:       "ул. Абая 10",
@@ -295,7 +279,6 @@ func TestCancelOrder_Success(t *testing.T) {
 	}
 	order, _ := svc.CreateOrder("user-1", req)
 
-	// отменяем
 	err := svc.CancelOrder(order.ID, "user-1")
 
 	if err != nil {
@@ -316,7 +299,6 @@ func TestCancelOrder_WrongUser(t *testing.T) {
 	}
 	order, _ := svc.CreateOrder("user-1", req)
 
-	// пытаемся отменить чужой заказ
 	err := svc.CancelOrder(order.ID, "user-2")
 
 	if err == nil {
